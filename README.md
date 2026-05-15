@@ -6,7 +6,7 @@
 ## Universidad Peruana de Ciencias Aplicadas
 
 **Ingeniería de Software**
-
+git checkout main
 **Ciclo:** 2026-1
 
 **Codigo del curso:** 1ASI0729
