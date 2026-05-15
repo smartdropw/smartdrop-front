@@ -1,0 +1,83 @@
+<div class="split-screen">
+
+  <div class="left-panel">
+    <div class="brand-info">
+      <h2>SmartDrop</h2>
+      <p class="tagline">IOT WATER MONITORING</p>
+      <h1>Welcome back</h1>
+      <p>Monitor consumption, alerts and safety from a single control center.</p>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <div class="lang-selector">
+      <span>Language</span>
+    </div>
+
+    <div class="login-box">
+      <p class="register-link">
+        Don't have an account? <a routerLink="/register">Register</a>
+      </p>
+      <h2 class="login-title">Login</h2>
+      <p class="login-subtitle">Enter your credentials to access your control center.</p>
+
+      <form class="login-form" (ngSubmit)="onLogin()">
+
+        <div class="input-group">
+          <label>Email</label>
+          <div class="input-wrapper">
+            <span class="material-icons field-icon">mail_outline</span>
+            <input
+              type="email"
+              name="email"
+              [(ngModel)]="email"
+              placeholder="you@email.com">
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>Password</label>
+          <div class="input-wrapper">
+            <span class="material-icons field-icon">lock_open</span>
+
+            <input
+              [type]="showPassword ? 'text' : 'password'"
+              name="password"
+              [(ngModel)]="password"
+              placeholder="Your password">
+
+            <span class="material-icons eye-icon" (click)="togglePassword()">
+              {{ showPassword ? 'visibility' : 'visibility_off' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="options-row">
+          <div class="remember-me">
+            <input type="checkbox" id="remember">
+            <label for="remember">Remember me</label>
+          </div>
+          <a href="#" class="forgot-link">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="btn-primary">
+          <span>Login</span>
+          <span class="material-icons">arrow_forward</span>
+        </button>
+
+        <div class="divider">
+          <span>Or continue with</span>
+        </div>
+
+        <div class="social-login">
+          <button type="button" class="social-btn">
+             Google
+          </button>
+          <button type="button" class="social-btn">
+            Facebook
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

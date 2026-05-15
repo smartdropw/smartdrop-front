@@ -1,0 +1,139 @@
+<div class="dashboard">
+  <div class="page-header">
+    <h1>Water Monitoring Dashboard</h1>
+    <p>Real-time monitoring and management of your water systems</p>
+  </div>
+
+  <!-- METRIC CARDS -->
+  <div class="metrics-grid">
+    <div class="metric-card" *ngFor="let m of metrics">
+      <div class="metric-top">
+        <span class="metric-label">{{ m.label }}</span>
+        <div class="metric-icon" [ngClass]="'icon--' + m.trend">
+          <ng-container [ngSwitch]="m.icon">
+            <svg *ngSwitchCase="'drop'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+            <svg *ngSwitchCase="'activity'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            <svg *ngSwitchCase="'thermometer'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
+            <svg *ngSwitchCase="'wifi'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+          </ng-container>
+        </div>
+      </div>
+      <div class="metric-value">{{ m.value }}</div>
+      <div class="metric-sub" [ngClass]="{ 'sub--warn': m.trend === 'up' }">{{ m.sub }}</div>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW -->
+  <div class="charts-row">
+    <!-- 24h usage -->
+    <div class="card chart-card">
+      <div class="card-header">
+        <div>
+          <h3>24-Hour Water Usage</h3>
+          <p>Real-time consumption and flow rate monitoring</p>
+        </div>
+      </div>
+      <div class="chart-wrap">
+        <canvas #chartCanvas class="usage-chart"></canvas>
+      </div>
+    </div>
+
+    <!-- Smart Irrigation -->
+    <div class="card irrigation-card">
+      <h3>Smart Irrigation Control</h3>
+      <p>Automated watering system management</p>
+
+      <div class="irr-row">
+        <div>
+          <span class="irr-label">Next Scheduled</span>
+          <span class="irr-value">{{ irrigationNext }}</span>
+          <small>Based on weather forecast and soil moisture</small>
+        </div>
+      </div>
+
+      <div class="soil-row">
+        <span>Soil Moisture</span>
+        <span class="soil-pct">{{ soilMoisture }}%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" [style.width.%]="soilMoisture"></div>
+      </div>
+
+      <div class="irr-actions">
+        <button class="btn-ghost">Manual Override</button>
+        <button class="btn-primary">Schedule Now</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DEVICE STATUS -->
+  <div class="section-header">
+    <div>
+      <h2>Device Status</h2>
+      <p>Monitor all connected IoT sensors</p>
+    </div>
+    <button class="btn-ghost-sm">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Manage Devices
+    </button>
+  </div>
+
+  <div class="devices-grid">
+    <div class="device-card" *ngFor="let d of devices">
+      <div class="device-header">
+        <div>
+          <p class="device-name">{{ d.name }}</p>
+          <p class="device-loc">{{ d.location }}</p>
+        </div>
+        <span class="status-dot" [ngClass]="'dot--' + d.status"></span>
+      </div>
+      <div class="device-stats">
+        <div class="stat-row"><span>Current Flow</span><strong>{{ d.flow }}</strong></div>
+        <div class="stat-row"><span>Daily Usage</span><strong>{{ d.daily }}</strong></div>
+        <div class="stat-row"><span>Battery</span><strong>{{ d.battery }}%</strong></div>
+      </div>
+      <div class="battery-bar">
+        <div class="battery-fill"
+          [style.width.%]="d.battery"
+          [ngClass]="{ 'battery--low': d.battery < 20 }"></div>
+      </div>
+      <div class="device-footer">
+        <button class="btn-ghost-sm">Details</button>
+        <button class="btn-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- USAGE PATTERN ANALYSIS -->
+  <div class="section-header" style="margin-top:28px">
+    <div>
+      <h2>Usage Pattern Analysis</h2>
+      <p>AI-detected efficiency patterns and anomalies</p>
+    </div>
+    <button class="btn-ghost-sm">View All Patterns</button>
+  </div>
+
+  <div class="patterns-list">
+    <div class="pattern-card" *ngFor="let p of patterns" [ngClass]="'pattern--' + p.type">
+      <div class="pattern-icon">
+        <svg *ngIf="p.type === 'warning'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <svg *ngIf="p.type === 'success'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      </div>
+      <div class="pattern-body">
+        <div class="pattern-title-row">
+          <strong>{{ p.title }}</strong>
+          <span class="pattern-tag" [ngClass]="'tag--' + p.tag">{{ p.tag }}</span>
+        </div>
+        <p>{{ p.desc }}</p>
+        <p class="pattern-meta">Location: {{ p.location }} &nbsp;·&nbsp; Impact: {{ p.impact }}</p>
+        <div class="pattern-actions" *ngIf="p.type === 'warning'">
+          <button class="btn-ghost-sm">Investigate</button>
+          <button class="btn-ghost-sm">Mark Resolved</button>
+        </div>
+      </div>
+      <span class="pattern-time">{{ p.time }}</span>
+    </div>
+  </div>
+</div>
