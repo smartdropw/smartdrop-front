@@ -1,14 +1,15 @@
 <div class="alerts-page">
   <div class="page-header">
-    <h1>Alerts &amp; Notifications</h1>
-    <p>Monitor and manage your water system alerts and notification preferences</p>
+    <h1>{{ language.t('alertsTitle') }}</h1>
+    <p>{{ language.t('alertsSubtitle') }}</p>
   </div>
+  <div class="action-message" *ngIf="message">{{ message }}</div>
 
   <!-- STATS -->
   <div class="stats-grid">
     <div class="stat-card" *ngFor="let s of stats" [ngClass]="'stat--' + s.color">
       <div class="stat-left">
-        <p class="stat-label">{{ s.label }}</p>
+        <p class="stat-label">{{ language.text(s.label) }}</p>
         <p class="stat-value">{{ s.value }}</p>
       </div>
       <div class="stat-icon">
@@ -26,61 +27,72 @@
   <div class="content-row">
     <!-- ACTIVE ALERTS -->
     <div class="card alerts-list-card">
-      <h3>Active Alerts</h3>
+      <h3>{{ language.t('activeAlerts') }}</h3>
+      <div class="inline-form compact-form">
+        <label>{{ language.t('type') }}
+          <select [(ngModel)]="newAlert.type">
+            <option value="critical">{{ language.t('critical') }}</option>
+            <option value="warning">{{ language.t('warnings') }}</option>
+            <option value="info">{{ language.t('infoAlerts') }}</option>
+          </select>
+        </label>
+        <label>{{ language.t('title') }} <input type="text" [(ngModel)]="newAlert.title" [placeholder]="language.t('alertTitlePlaceholder')"></label>
+        <label>{{ language.t('description') }} <input type="text" [(ngModel)]="newAlert.desc" [placeholder]="language.t('alertDetailsPlaceholder')"></label>
+        <button class="btn-primary" (click)="addAlert()">{{ language.t('addAlert') }}</button>
+      </div>
       <div class="alerts-list">
-        <div class="alert-item" *ngFor="let a of alerts; let i = index" [ngClass]="'alert--' + a.type">
+        <div class="alert-item" *ngFor="let a of activeAlerts" [ngClass]="'alert--' + a.type">
           <div class="alert-icon">
             <svg *ngIf="a.type === 'critical'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
             <svg *ngIf="a.type === 'warning'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             <svg *ngIf="a.type === 'info'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           </div>
           <div class="alert-body">
-            <p class="alert-title">{{ a.title }}</p>
-            <p class="alert-desc">{{ a.desc }}</p>
-            <span class="alert-time">{{ a.time }}</span>
+            <p class="alert-title">{{ language.text(a.title) }}</p>
+            <p class="alert-desc">{{ language.text(a.desc) }}</p>
+            <span class="alert-time">{{ language.text(a.time) }}</span>
           </div>
-          <button class="alert-close" (click)="removeAlert(i)">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          </button>
+          <button class="btn-ghost-sm" (click)="resolveAlert(a)">{{ language.t('resolve') }}</button>
+          <button class="btn-ghost-sm" (click)="removeAlert(a)">{{ language.t('remove') }}</button>
         </div>
-        <div class="no-alerts" *ngIf="alerts.length === 0">
+        <div class="no-alerts" *ngIf="activeAlerts.length === 0">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-          <p>All clear! No active alerts.</p>
+          <p>{{ language.t('allClear') }}</p>
         </div>
       </div>
     </div>
 
     <!-- NOTIFICATION SETTINGS -->
     <div class="card settings-card">
-      <h3>Notification Settings</h3>
+      <h3>{{ language.t('notificationSettings') }}</h3>
 
       <div class="settings-group">
-        <p class="settings-label">Alert Types</p>
+        <p class="settings-label">{{ language.t('alertTypes') }}</p>
         <label class="toggle-row">
-          <input type="checkbox" [(ngModel)]="settings.criticalAlerts"> Critical Alerts
+          <input type="checkbox" [(ngModel)]="settings.criticalAlerts"> {{ language.t('criticalAlerts') }}
         </label>
         <label class="toggle-row">
-          <input type="checkbox" [(ngModel)]="settings.usageWarnings"> Usage Warnings
+          <input type="checkbox" [(ngModel)]="settings.usageWarnings"> {{ language.t('usageWarnings') }}
         </label>
         <label class="toggle-row">
-          <input type="checkbox" [(ngModel)]="settings.maintenanceReminders"> Maintenance Reminders
+          <input type="checkbox" [(ngModel)]="settings.maintenanceReminders"> {{ language.t('maintenanceReminders') }}
         </label>
       </div>
 
       <div class="settings-group">
-        <p class="settings-label">Delivery Methods</p>
+        <p class="settings-label">{{ language.t('deliveryMethods') }}</p>
         <label class="toggle-row">
-          <input type="checkbox" [(ngModel)]="settings.pushNotifications"> Push Notifications
+          <input type="checkbox" [(ngModel)]="settings.pushNotifications"> {{ language.t('pushNotifications') }}
         </label>
         <label class="toggle-row">
-          <input type="checkbox" [(ngModel)]="settings.email"> Email
+          <input type="checkbox" [(ngModel)]="settings.email"> {{ language.t('emailMethod') }}
         </label>
         <label class="toggle-row">
           <input type="checkbox" [(ngModel)]="settings.sms"> SMS
         </label>
       </div>
 
-      <button class="btn-primary full">Save Settings</button>
+      <button class="btn-primary full" (click)="saveSettings()">{{ language.t('saveSettings') }}</button>
     </div>
   </div>
 </div>

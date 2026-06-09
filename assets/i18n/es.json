@@ -1,1 +1,13 @@
-{"WELCOME": "Bienvenido de nuevo", "LOGIN": "Iniciar Sesión"}
+{
+  "WELCOME": "Bienvenido de nuevo",
+  "LOGIN": "Iniciar sesión",
+  "LANGUAGE": "Idioma",
+  "REGISTER": "Registrarse",
+  "CREATE_ACCOUNT": "Crear cuenta",
+  "DASHBOARD": "Panel",
+  "ALERTS": "Alertas",
+  "REPORTS": "Reportes",
+  "BUSINESS": "Negocio",
+  "SUPPORT": "Soporte",
+  "BILLING": "Facturación"
+}

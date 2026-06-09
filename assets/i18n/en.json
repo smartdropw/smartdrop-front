@@ -1,1 +1,13 @@
-{"WELCOME": "Welcome back", "LOGIN": "Login"}
+{
+  "WELCOME": "Welcome back",
+  "LOGIN": "Login",
+  "LANGUAGE": "Language",
+  "REGISTER": "Register",
+  "CREATE_ACCOUNT": "Create account",
+  "DASHBOARD": "Dashboard",
+  "ALERTS": "Alerts",
+  "REPORTS": "Reports",
+  "BUSINESS": "Business",
+  "SUPPORT": "Support",
+  "BILLING": "Billing"
+}

@@ -5,3 +5,111 @@ body {
   background-color: #e0f7f9; /* El celeste de tus mockups */
   font-family: 'Roboto', sans-serif;
 }
+
+.action-message {
+  background: #e0f7fc;
+  border: 1px solid #8ee3f1;
+  color: #075985;
+  border-radius: 8px;
+  font-weight: 700;
+  margin: 14px 0;
+  padding: 12px 14px;
+}
+
+.inline-form {
+  display: grid;
+  gap: 12px;
+  margin: 14px 0;
+}
+
+.compact-form {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  align-items: end;
+}
+
+.inline-form label {
+  color: #475569;
+  display: grid;
+  font-size: 12px;
+  font-weight: 700;
+  gap: 6px;
+}
+
+.inline-form input,
+.inline-form select,
+.inline-form textarea {
+  border: 1px solid #dbe4ee;
+  border-radius: 8px;
+  color: #0f172a;
+  font: inherit;
+  min-height: 38px;
+  padding: 8px 10px;
+}
+
+.form-actions,
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.action-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.lang-selector,
+.sidebar-language {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.lang-selector button,
+.sidebar-language button {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  color: #475569;
+  cursor: pointer;
+  font-weight: 800;
+  min-height: 32px;
+  min-width: 40px;
+  padding: 6px 10px;
+}
+
+.lang-selector button.active,
+.sidebar-language button.active {
+  background: #00b4d8;
+  border-color: #00b4d8;
+  color: #ffffff;
+}
+
+.btn-ghost-sm,
+.view-all,
+.dl-btn {
+  background: #00b4d8;
+  border: none;
+  border-radius: 8px;
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  min-height: 32px;
+  padding: 8px 12px;
+  text-decoration: none;
+  transition: background 0.15s ease, transform 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-ghost-sm:hover,
+.view-all:hover,
+.dl-btn:hover {
+  background: #0096c7;
+  color: #ffffff;
+  text-decoration: none;
+  transform: translateY(-1px);
+}

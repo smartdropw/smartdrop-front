@@ -1,39 +1,53 @@
 <div class="billing-page">
   <div class="page-header">
-    <h1>Billing &amp; Payments</h1>
-    <p>Manage your billing information, payment methods, and transaction history</p>
+    <h1>{{ language.t('billingTitle') }}</h1>
+    <p>{{ language.t('billingSubtitle') }}</p>
   </div>
 
-  <!-- TOP METRICS -->
+  <div class="action-message" *ngIf="message">{{ message }}</div>
+
   <div class="metrics-grid">
     <div class="metric-card">
       <div class="metric-icon blue"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
-      <p class="metric-label">Current Balance</p>
-      <p class="metric-value">$247.50</p>
+      <p class="metric-label">{{ language.t('currentBalance') }}</p>
+      <p class="metric-value">${{ currentBalance.toFixed(2) }}</p>
     </div>
     <div class="metric-card">
       <div class="metric-icon yellow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
-      <p class="metric-label">Next Payment Due</p>
+      <p class="metric-label">{{ language.t('nextPaymentDue') }}</p>
       <p class="metric-value">Dec 15</p>
     </div>
     <div class="metric-card">
       <div class="metric-icon green"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
-      <p class="metric-label">Monthly Average</p>
-      <p class="metric-value">$189.30</p>
+      <p class="metric-label">{{ language.t('monthlyAverage') }}</p>
+      <p class="metric-value">${{ monthlyAverage.toFixed(2) }}</p>
     </div>
   </div>
 
   <div class="content-row">
-    <!-- LEFT -->
     <div class="left-col">
-      <!-- PAYMENT METHODS -->
       <div class="card">
         <div class="card-header">
-          <h3>Payment Methods</h3>
-          <button class="btn-primary sm">+ Add Method</button>
+          <h3>{{ language.t('paymentMethods') }}</h3>
+          <button class="btn-primary sm" (click)="showMethodForm = !showMethodForm">{{ language.t('addMethod') }}</button>
         </div>
+
+        <div class="inline-form compact-form" *ngIf="showMethodForm">
+          <label>{{ language.t('type') }}
+            <select [(ngModel)]="methodForm.type">
+              <option value="visa">{{ language.t('card') }}</option>
+              <option value="paypal">{{ language.t('paypal') }}</option>
+              <option value="bank">{{ language.t('bank') }}</option>
+            </select>
+          </label>
+          <label>{{ language.t('name') }} <input type="text" [(ngModel)]="methodForm.label" placeholder="Visa **** 1234"></label>
+          <label>{{ language.t('detail') }} <input type="text" [(ngModel)]="methodForm.sub" placeholder="Expires 12/26"></label>
+          <label><input type="checkbox" [(ngModel)]="methodForm.primary"> {{ language.t('primary') }}</label>
+          <button class="btn-primary" (click)="addMethod()">{{ language.t('saveMethod') }}</button>
+        </div>
+
         <div class="method-list">
-          <div class="method-item" *ngFor="let m of paymentMethods">
+          <div class="method-item" *ngFor="let m of paymentMethods; let i = index">
             <div class="method-icon">
               <svg *ngIf="m.type === 'visa'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
               <svg *ngIf="m.type === 'paypal'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2"><path d="M7 11l5-5 5 5M7 17l5-5 5 5"/></svg>
@@ -41,37 +55,39 @@
             </div>
             <div class="method-info">
               <p class="method-name">{{ m.label }}</p>
-              <p class="method-sub">{{ m.sub }}</p>
+              <p class="method-sub">{{ language.text(m.sub) }}</p>
             </div>
-            <span *ngIf="m.primary" class="primary-badge">Primary</span>
-            <button class="dots-btn">···</button>
+            <span *ngIf="m.primary" class="primary-badge">{{ language.t('primary') }}</span>
+            <button class="btn-ghost-sm" *ngIf="!m.primary" (click)="setPrimary(i)">{{ language.t('primary') }}</button>
+            <button class="btn-ghost-sm" (click)="removeMethod(i)">{{ language.t('remove') }}</button>
           </div>
         </div>
       </div>
 
-      <!-- BILLING SETTINGS -->
       <div class="card settings-card">
-        <h3>Billing Settings</h3>
-        <label class="toggle-row"><input type="checkbox" [(ngModel)]="settings.autoPay"> <div><strong>Auto-pay enabled</strong><p>Automatically charge your primary payment method</p></div></label>
-        <label class="toggle-row"><input type="checkbox" [(ngModel)]="settings.emailNotif"> <div><strong>Email notifications</strong><p>Receive billing reminders and receipts</p></div></label>
-        <label class="toggle-row"><input type="checkbox" [(ngModel)]="settings.smsAlerts"> <div><strong>SMS alerts</strong><p>Get text messages for payment confirmations</p></div></label>
+        <h3>{{ language.t('billingSettings') }}</h3>
+        <label class="toggle-row"><input type="checkbox" [(ngModel)]="settings.autoPay"> <div><strong>{{ language.t('autoPayEnabled') }}</strong><p>{{ language.t('autoPayDescription') }}</p></div></label>
+        <label class="toggle-row"><input type="checkbox" [(ngModel)]="settings.emailNotif"> <div><strong>{{ language.t('emailNotifications') }}</strong><p>{{ language.t('emailNotificationsDescription') }}</p></div></label>
+        <label class="toggle-row"><input type="checkbox" [(ngModel)]="settings.smsAlerts"> <div><strong>{{ language.t('smsAlerts') }}</strong><p>{{ language.t('smsAlertsDescription') }}</p></div></label>
         <div class="cycle-row">
-          <label>Billing Cycle</label>
-          <select [(ngModel)]="settings.cycle"><option>Monthly</option><option>Quarterly</option><option>Annually</option></select>
+          <label>{{ language.t('billingCycle') }}</label>
+          <select [(ngModel)]="settings.cycle">
+            <option value="Monthly">{{ language.t('monthly') }}</option>
+            <option value="Quarterly">{{ language.t('quarterly') }}</option>
+            <option value="Annually">{{ language.t('annually') }}</option>
+          </select>
         </div>
-        <button class="btn-primary full">Save Settings</button>
+        <button class="btn-primary full" (click)="saveSettings()">{{ language.t('saveSettings') }}</button>
       </div>
     </div>
 
-    <!-- RIGHT -->
     <div class="right-col">
-      <!-- TRANSACTIONS -->
       <div class="card">
         <div class="card-header">
-          <h3>Recent Transactions</h3>
+          <h3>{{ language.t('recentTransactions') }}</h3>
         </div>
         <div class="tx-list">
-          <div class="tx-item" *ngFor="let t of transactions">
+          <div class="tx-item" *ngFor="let t of visibleTransactions">
             <div class="tx-icon" [ngClass]="{ 'tx-icon--up': t.amount > 0 }">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline *ngIf="t.amount < 0" points="7 10 12 15 17 10"/>
@@ -79,36 +95,40 @@
               </svg>
             </div>
             <div class="tx-info">
-              <p class="tx-name">{{ t.name }}</p>
-              <p class="tx-date">{{ t.date }}</p>
+              <p class="tx-name">{{ language.text(t.name) }}</p>
+              <p class="tx-date">{{ language.text(t.date) }}</p>
             </div>
             <span class="tx-amount" [ngClass]="{ 'tx-positive': t.amount > 0 }">
               {{ t.amount > 0 ? '+' : '' }}${{ Math.abs(t.amount).toFixed(2) }}
             </span>
           </div>
         </div>
-        <button class="view-all">View All Transactions</button>
+        <button class="view-all" (click)="showAllTransactions = !showAllTransactions">
+          {{ showAllTransactions ? language.t('showRecentTransactions') : language.t('viewAllTransactions') }}
+        </button>
       </div>
 
-      <!-- DIGITAL WALLET -->
       <div class="card wallet-card">
-        <h3>Digital Wallet</h3>
+        <h3>{{ language.t('digitalWallet') }}</h3>
         <div class="wallet-center">
           <div class="wallet-icon">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M21 18v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v1"/><polyline points="23 6 23 18 16 18 16 6 23 6"/><line x1="20" y1="12" x2="20.01" y2="12"/></svg>
           </div>
           <p class="wallet-name">Qlic Wallet</p>
-          <p class="wallet-balance">$125.75</p>
-          <p class="wallet-label">Available Balance</p>
+          <p class="wallet-balance">${{ walletBalance.toFixed(2) }}</p>
+          <p class="wallet-label">{{ language.t('availableBalance') }}</p>
+        </div>
+        <div class="inline-form compact-form">
+          <label>{{ language.t('amount') }} <input type="number" min="1" [(ngModel)]="walletAmount"></label>
         </div>
         <div class="wallet-actions">
-          <button class="btn-primary">Add Funds</button>
-          <button class="btn-ghost">Withdraw</button>
+          <button class="btn-primary" (click)="addFunds()">{{ language.t('addFunds') }}</button>
+          <button class="btn-ghost" (click)="withdraw()">{{ language.t('withdraw') }}</button>
         </div>
         <div class="wallet-stats">
-          <div class="ws-row"><span>Rewards Points</span><strong>2,340 pts</strong></div>
-          <div class="ws-row"><span>Cashback Rate</span><strong>2.5%</strong></div>
-          <div class="ws-row"><span>Next Reward</span><strong>$5.00</strong></div>
+          <div class="ws-row"><span>{{ language.t('rewardsPoints') }}</span><strong>2,340 pts</strong></div>
+          <div class="ws-row"><span>{{ language.t('cashbackRate') }}</span><strong>2.5%</strong></div>
+          <div class="ws-row"><span>{{ language.t('nextReward') }}</span><strong>$5.00</strong></div>
         </div>
       </div>
     </div>
