@@ -3,36 +3,36 @@
     <div class="brand-info">
       <h2>SmartDrop</h2>
       <span class="tagline">IOT WATER MONITORING</span>
-      <h1>Create account</h1>
-      <p>Create your account to Monitor consumption, alerts and safety from a single control center.</p>
+      <h1>{{ language.t('createAccount') }}</h1>
+      <p>{{ language.t('createIntro') }}</p>
     </div>
   </div>
 
   <div class="right-panel">
     <div class="lang-selector">
-      <span>Language</span>
-      <button type="button">EN</button>
-      <button type="button">ES</button>
+      <span>{{ language.t('language') }}</span>
+      <button type="button" [class.active]="language.current === 'en'" (click)="language.setLanguage('en')">EN</button>
+      <button type="button" [class.active]="language.current === 'es'" (click)="language.setLanguage('es')">ES</button>
     </div>
 
     <div class="login-box">
-      <p class="register-link">Already have an account? <a routerLink="/login">Sign in</a></p>
+      <p class="register-link">{{ language.t('alreadyHaveAccount') }} <a routerLink="/login">{{ language.t('signIn') }}</a></p>
 
-      <h2 class="login-title">Register</h2>
-      <p class="login-subtitle">Start monitoring your liquids with SmartDrop</p>
+      <h2 class="login-title">{{ language.t('register') }}</h2>
+      <p class="login-subtitle">{{ language.t('registerSubtitle') }}</p>
 
       <form class="login-form" (submit)="$event.preventDefault()">
 
         <div class="input-group">
-          <label>Full name</label>
+          <label>{{ language.t('fullName') }}</label>
           <div class="input-wrapper">
             <span class="material-icons field-icon">person_outline</span>
-            <input type="text" name="fullName" placeholder="Enter your full name">
+            <input type="text" name="fullName" [(ngModel)]="fullName" placeholder="Enter your full name">
           </div>
         </div>
 
         <div class="input-group">
-          <label>Email Address</label>
+          <label>{{ language.t('emailAddress') }}</label>
           <div class="input-wrapper">
             <span class="material-icons field-icon">mail_outline</span>
             <input
@@ -44,7 +44,7 @@
         </div>
 
         <div class="input-group">
-          <label>Password</label>
+          <label>{{ language.t('password') }}</label>
           <div class="input-wrapper">
             <span class="material-icons field-icon">lock_open</span>
             <input
@@ -59,7 +59,7 @@
         </div>
 
         <div class="input-group">
-          <label>Confirm Password</label>
+          <label>{{ language.t('confirmPassword') }}</label>
           <div class="input-wrapper">
             <span class="material-icons field-icon">lock_open</span>
             <input
@@ -76,7 +76,7 @@
         <div class="options-row">
           <div class="remember-me">
             <input type="checkbox" id="terms" name="terms">
-            <label for="terms">I agree to the terms</label>
+            <label for="terms">{{ language.t('agreeTerms') }}</label>
           </div>
         </div>
 
@@ -84,11 +84,11 @@
           type="button"
           class="btn-primary"
           (click)="onRegister()">
-          <span>Create account</span>
+          <span>{{ language.t('createAccount') }}</span>
           <span class="material-icons">person_add</span>
         </button>
 
-        <div class="divider"><span>Or continue with</span></div>
+        <div class="divider"><span>{{ language.t('orContinueWith') }}</span></div>
 
         <div class="social-login">
           <button type="button" class="social-btn">Google</button>

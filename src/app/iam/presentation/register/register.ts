@@ -3,36 +3,30 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../infrastructure/services/auth.service';
+import { LanguageService } from '../../../shared/language/language.service';
 
 @Component({
   selector: 'app-register',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './register.html',
-  styleUrls: ['./register.css']
+  styleUrls: ['./register.css'],
 })
 export class RegisterComponent {
+  fullName = '';
   email = '';
   password = '';
   confirmPassword = '';
-
-  // Variables de control de UI
   showPassword = false;
   showConfirm = false;
 
-  constructor(private authService: AuthService, private router: Router) {
-    console.log('Componente de Registro Inicializado');
-  }
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    public language: LanguageService,
+  ) {}
 
   onRegister() {
-    console.log('Datos actuales:', this.email, this.password);
-
-    if (!this.email || !this.password) {
-      alert('Falta email o password');
-      return;
-    }
-    console.log(' Intentando registrar:', this.email);
-
     if (!this.email || !this.password) {
       alert('Por favor, llena los campos');
       return;
@@ -43,7 +37,7 @@ export class RegisterComponent {
       return;
     }
 
-    this.authService.register(this.email, this.password);
+    this.authService.register(this.email, this.password, this.fullName);
     alert('Usuario guardado con éxito');
     this.router.navigate(['/login']);
   }

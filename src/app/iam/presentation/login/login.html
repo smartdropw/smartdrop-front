@@ -4,27 +4,29 @@
     <div class="brand-info">
       <h2>SmartDrop</h2>
       <p class="tagline">IOT WATER MONITORING</p>
-      <h1>Welcome back</h1>
-      <p>Monitor consumption, alerts and safety from a single control center.</p>
+      <h1>{{ language.t('welcomeBack') }}</h1>
+      <p>{{ language.t('loginIntro') }}</p>
     </div>
   </div>
 
   <div class="right-panel">
     <div class="lang-selector">
-      <span>Language</span>
+      <span>{{ language.t('language') }}</span>
+      <button type="button" [class.active]="language.current === 'en'" (click)="language.setLanguage('en')">EN</button>
+      <button type="button" [class.active]="language.current === 'es'" (click)="language.setLanguage('es')">ES</button>
     </div>
 
     <div class="login-box">
       <p class="register-link">
-        Don't have an account? <a routerLink="/register">Register</a>
+        {{ language.t('dontHaveAccount') }} <a routerLink="/register">{{ language.t('register') }}</a>
       </p>
-      <h2 class="login-title">Login</h2>
-      <p class="login-subtitle">Enter your credentials to access your control center.</p>
+      <h2 class="login-title">{{ language.t('login') }}</h2>
+      <p class="login-subtitle">{{ language.t('loginSubtitle') }}</p>
 
       <form class="login-form" (ngSubmit)="onLogin()">
 
         <div class="input-group">
-          <label>Email</label>
+          <label>{{ language.t('email') }}</label>
           <div class="input-wrapper">
             <span class="material-icons field-icon">mail_outline</span>
             <input
@@ -36,7 +38,7 @@
         </div>
 
         <div class="input-group">
-          <label>Password</label>
+          <label>{{ language.t('password') }}</label>
           <div class="input-wrapper">
             <span class="material-icons field-icon">lock_open</span>
 
@@ -55,18 +57,18 @@
         <div class="options-row">
           <div class="remember-me">
             <input type="checkbox" id="remember">
-            <label for="remember">Remember me</label>
+            <label for="remember">{{ language.t('rememberMe') }}</label>
           </div>
-          <a href="#" class="forgot-link">Forgot password?</a>
+          <a href="#" class="forgot-link">{{ language.t('forgotPassword') }}</a>
         </div>
 
         <button type="submit" class="btn-primary">
-          <span>Login</span>
+          <span>{{ language.t('login') }}</span>
           <span class="material-icons">arrow_forward</span>
         </button>
 
         <div class="divider">
-          <span>Or continue with</span>
+          <span>{{ language.t('orContinueWith') }}</span>
         </div>
 
         <div class="social-login">

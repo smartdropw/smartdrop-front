@@ -1,14 +1,15 @@
 <div class="dashboard">
   <div class="page-header">
-    <h1>Water Monitoring Dashboard</h1>
-    <p>Real-time monitoring and management of your water systems</p>
+    <h1>{{ language.t('dashboardTitle') }}</h1>
+    <p>{{ language.t('dashboardSubtitle') }}</p>
   </div>
 
-  <!-- METRIC CARDS -->
+  <div class="action-message" *ngIf="message">{{ message }}</div>
+
   <div class="metrics-grid">
     <div class="metric-card" *ngFor="let m of metrics">
       <div class="metric-top">
-        <span class="metric-label">{{ m.label }}</span>
+        <span class="metric-label">{{ language.t(m.labelKey) }}</span>
         <div class="metric-icon" [ngClass]="'icon--' + m.trend">
           <ng-container [ngSwitch]="m.icon">
             <svg *ngSwitchCase="'drop'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
@@ -19,18 +20,18 @@
         </div>
       </div>
       <div class="metric-value">{{ m.value }}</div>
-      <div class="metric-sub" [ngClass]="{ 'sub--warn': m.trend === 'up' }">{{ m.sub }}</div>
+      <div class="metric-sub" [ngClass]="{ 'sub--warn': m.trend === 'up' }">
+        {{ m.subKey ? language.t(m.subKey) : m.subText }}
+      </div>
     </div>
   </div>
 
-  <!-- CHARTS ROW -->
   <div class="charts-row">
-    <!-- 24h usage -->
     <div class="card chart-card">
       <div class="card-header">
         <div>
-          <h3>24-Hour Water Usage</h3>
-          <p>Real-time consumption and flow rate monitoring</p>
+          <h3>{{ language.t('waterUsageTitle') }}</h3>
+          <p>{{ language.t('waterUsageSubtitle') }}</p>
         </div>
       </div>
       <div class="chart-wrap">
@@ -38,21 +39,20 @@
       </div>
     </div>
 
-    <!-- Smart Irrigation -->
     <div class="card irrigation-card">
-      <h3>Smart Irrigation Control</h3>
-      <p>Automated watering system management</p>
+      <h3>{{ language.t('irrigationTitle') }}</h3>
+      <p>{{ language.t('irrigationSubtitle') }}</p>
 
       <div class="irr-row">
         <div>
-          <span class="irr-label">Next Scheduled</span>
-          <span class="irr-value">{{ irrigationNext }}</span>
-          <small>Based on weather forecast and soil moisture</small>
+          <span class="irr-label">{{ language.t('nextScheduled') }}</span>
+          <span class="irr-value">{{ language.text(irrigationNext) }}</span>
+          <small>{{ manualOverride ? language.t('manualControlActive') : language.t('scheduleMoistureNote') }}</small>
         </div>
       </div>
 
       <div class="soil-row">
-        <span>Soil Moisture</span>
+        <span>{{ language.t('soilMoisture') }}</span>
         <span class="soil-pct">{{ soilMoisture }}%</span>
       </div>
       <div class="progress-bar">
@@ -60,80 +60,106 @@
       </div>
 
       <div class="irr-actions">
-        <button class="btn-ghost">Manual Override</button>
-        <button class="btn-primary">Schedule Now</button>
+        <button class="btn-ghost" (click)="toggleManualOverride()">
+          {{ manualOverride ? language.t('disableOverride') : language.t('manualOverride') }}
+        </button>
+        <button class="btn-primary" (click)="scheduleIrrigation()">{{ language.t('scheduleNow') }}</button>
+      </div>
+
+      <div class="inline-form compact-form">
+        <label>{{ language.t('date') }} <input type="date" [(ngModel)]="scheduleForm.date"></label>
+        <label>{{ language.t('time') }} <input type="time" [(ngModel)]="scheduleForm.time"></label>
+        <label>{{ language.t('moisture') }} <input type="number" min="0" max="100" [(ngModel)]="scheduleForm.moisture"></label>
       </div>
     </div>
   </div>
 
-  <!-- DEVICE STATUS -->
   <div class="section-header">
     <div>
-      <h2>Device Status</h2>
-      <p>Monitor all connected IoT sensors</p>
+      <h2>{{ language.t('deviceStatus') }}</h2>
+      <p>{{ language.t('deviceStatusSubtitle') }}</p>
     </div>
-    <button class="btn-ghost-sm">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      Manage Devices
-    </button>
+    <button class="btn-ghost-sm" (click)="openDeviceForm()">{{ language.t('addDevice') }}</button>
+  </div>
+
+  <div class="card inline-form" *ngIf="showDeviceForm">
+    <h3>{{ editingDeviceIndex === null ? language.t('addDeviceTitle') : language.t('editDeviceTitle') }}</h3>
+    <label>{{ language.t('name') }} <input type="text" [(ngModel)]="deviceForm.name" placeholder="Sensor name"></label>
+    <label>{{ language.t('location') }} <input type="text" [(ngModel)]="deviceForm.location" placeholder="Kitchen, Garden..."></label>
+    <label>{{ language.t('currentFlow') }} <input type="text" [(ngModel)]="deviceForm.flow" placeholder="12.5 L/min"></label>
+    <label>{{ language.t('dailyUsage') }} <input type="text" [(ngModel)]="deviceForm.daily" placeholder="245 L"></label>
+    <label>{{ language.t('battery') }} <input type="number" min="0" max="100" [(ngModel)]="deviceForm.battery"></label>
+    <label>{{ language.t('status') }}
+      <select [(ngModel)]="deviceForm.status">
+        <option value="online">{{ language.t('online') }}</option>
+        <option value="offline">{{ language.t('offline') }}</option>
+      </select>
+    </label>
+    <div class="form-actions">
+      <button class="btn-primary" (click)="saveDevice()">{{ language.t('saveDevice') }}</button>
+      <button class="btn-ghost-sm" (click)="showDeviceForm = false">{{ language.t('cancel') }}</button>
+    </div>
+  </div>
+
+  <div class="card action-panel" *ngIf="selectedDevice">
+    <strong>{{ selectedDevice.name }}</strong>
+    <span>{{ language.text(selectedDevice.location) }} - {{ selectedDevice.flow }} - {{ selectedDevice.daily }} - {{ selectedDevice.battery }}% {{ language.t('battery') }}</span>
   </div>
 
   <div class="devices-grid">
-    <div class="device-card" *ngFor="let d of devices">
+    <div class="device-card" *ngFor="let d of devices; let i = index">
       <div class="device-header">
         <div>
-          <p class="device-name">{{ d.name }}</p>
-          <p class="device-loc">{{ d.location }}</p>
+          <p class="device-name">{{ language.text(d.name) }}</p>
+          <p class="device-loc">{{ language.text(d.location) }}</p>
         </div>
         <span class="status-dot" [ngClass]="'dot--' + d.status"></span>
       </div>
       <div class="device-stats">
-        <div class="stat-row"><span>Current Flow</span><strong>{{ d.flow }}</strong></div>
-        <div class="stat-row"><span>Daily Usage</span><strong>{{ d.daily }}</strong></div>
-        <div class="stat-row"><span>Battery</span><strong>{{ d.battery }}%</strong></div>
+        <div class="stat-row"><span>{{ language.t('currentFlow') }}</span><strong>{{ d.flow }}</strong></div>
+        <div class="stat-row"><span>{{ language.t('dailyUsage') }}</span><strong>{{ d.daily }}</strong></div>
+        <div class="stat-row"><span>{{ language.t('battery') }}</span><strong>{{ d.battery }}%</strong></div>
       </div>
       <div class="battery-bar">
-        <div class="battery-fill"
-          [style.width.%]="d.battery"
-          [ngClass]="{ 'battery--low': d.battery < 20 }"></div>
+        <div class="battery-fill" [style.width.%]="d.battery" [ngClass]="{ 'battery--low': d.battery < 20 }"></div>
       </div>
       <div class="device-footer">
-        <button class="btn-ghost-sm">Details</button>
-        <button class="btn-icon">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        </button>
+        <button class="btn-ghost-sm" (click)="showDetails(d)">{{ language.t('details') }}</button>
+        <button class="btn-ghost-sm" (click)="openDeviceForm(i)">{{ language.t('edit') }}</button>
+        <button class="btn-ghost-sm" (click)="removeDevice(i)">{{ language.t('remove') }}</button>
       </div>
     </div>
   </div>
 
-  <!-- USAGE PATTERN ANALYSIS -->
   <div class="section-header" style="margin-top:28px">
     <div>
-      <h2>Usage Pattern Analysis</h2>
-      <p>AI-detected efficiency patterns and anomalies</p>
+      <h2>{{ language.t('usagePatternTitle') }}</h2>
+      <p>{{ language.t('usagePatternSubtitle') }}</p>
     </div>
-    <button class="btn-ghost-sm">View All Patterns</button>
+    <button class="btn-ghost-sm" (click)="showAllPatterns = !showAllPatterns">
+      {{ showAllPatterns ? language.t('showLess') : language.t('viewAllPatterns') }}
+    </button>
   </div>
 
   <div class="patterns-list">
-    <div class="pattern-card" *ngFor="let p of patterns" [ngClass]="'pattern--' + p.type">
+    <div class="pattern-card" *ngFor="let p of visiblePatterns; let i = index" [ngClass]="'pattern--' + p.type">
       <div class="pattern-icon">
         <svg *ngIf="p.type === 'warning'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
         <svg *ngIf="p.type === 'success'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
       </div>
       <div class="pattern-body">
         <div class="pattern-title-row">
-          <strong>{{ p.title }}</strong>
-          <span class="pattern-tag" [ngClass]="'tag--' + p.tag">{{ p.tag }}</span>
+          <strong>{{ language.text(p.title) }}</strong>
+          <span class="pattern-tag" [ngClass]="'tag--' + p.tag">{{ language.t(p.tag) }}</span>
         </div>
-        <p>{{ p.desc }}</p>
-        <p class="pattern-meta">Location: {{ p.location }} &nbsp;·&nbsp; Impact: {{ p.impact }}</p>
-        <div class="pattern-actions" *ngIf="p.type === 'warning'">
-          <button class="btn-ghost-sm">Investigate</button>
-          <button class="btn-ghost-sm">Mark Resolved</button>
+        <p>{{ language.text(p.desc) }}</p>
+        <p class="pattern-meta">{{ language.t('locationLabel') }}: {{ p.location }} - {{ language.t('impactLabel') }}: {{ language.text(p.impact) }}</p>
+        <div class="pattern-actions" *ngIf="p.tag !== 'resolved'">
+          <button class="btn-ghost-sm" (click)="updatePattern(i, 'investigating')">{{ language.t('investigate') }}</button>
+          <button class="btn-ghost-sm" (click)="updatePattern(i, 'resolved')">{{ language.t('markResolved') }}</button>
         </div>
       </div>
-      <span class="pattern-time">{{ p.time }}</span>
+      <span class="pattern-time">{{ language.text(p.time) }}</span>
     </div>
   </div>
 </div>

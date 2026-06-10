@@ -1,41 +1,56 @@
 <div class="business-page">
   <div class="page-header">
-    <h1>Inventory and Business</h1>
-    <p>Manage tank inventory and business analytics</p>
+    <h1>{{ language.t('businessTitle') }}</h1>
+    <p>{{ language.t('businessSubtitle') }}</p>
   </div>
+
+  <div class="action-message" *ngIf="message">{{ message }}</div>
 
   <div class="metrics-grid">
     <div class="metric-card">
-      <div class="metric-top"><span>Number of Tanks</span><div class="m-icon blue"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div></div>
-      <p class="metric-value">14</p>
+      <div class="metric-top"><span>{{ language.t('numberOfTanks') }}</span><div class="m-icon blue"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div></div>
+      <p class="metric-value">{{ tanks.length }}</p>
     </div>
     <div class="metric-card">
-      <div class="metric-top"><span>Close to Replenish</span><div class="m-icon yellow"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div></div>
-      <p class="metric-value">2</p>
+      <div class="metric-top"><span>{{ language.t('closeToReplenish') }}</span><div class="m-icon yellow"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div></div>
+      <p class="metric-value">{{ closeToReplenish }}</p>
     </div>
     <div class="metric-card">
-      <div class="metric-top"><span>Savings</span><div class="m-icon green"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div></div>
-      <p class="metric-value">$2,340</p>
+      <div class="metric-top"><span>{{ language.t('savings') }}</span><div class="m-icon green"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div></div>
+      <p class="metric-value">${{ savings | number }}</p>
     </div>
   </div>
 
   <div class="content-row">
-    <!-- TANK INVENTORY -->
     <div class="card">
       <div class="card-header">
-        <h3>Tank Inventory</h3>
-        <button class="btn-primary">+ Add Tank</button>
+        <h3>{{ language.t('tankInventory') }}</h3>
+        <button class="btn-primary" (click)="openForm()">{{ language.t('addTank') }}</button>
       </div>
+
+      <div class="inline-form compact-form" *ngIf="showForm">
+        <label>{{ language.t('name') }} <input type="text" [(ngModel)]="form.name" placeholder="Tank name"></label>
+        <label>{{ language.t('capacity') }} <input type="number" min="1" [(ngModel)]="form.capacity"></label>
+        <label>{{ language.t('current') }} <input type="number" min="0" [(ngModel)]="form.current"></label>
+        <button class="btn-primary" (click)="saveTank()">{{ language.t('saveTank') }}</button>
+        <button class="btn-ghost-sm" (click)="showForm = false">{{ language.t('cancel') }}</button>
+      </div>
+
       <div class="tank-list">
-        <div class="tank-item" *ngFor="let t of tanks">
+        <div class="tank-item" *ngFor="let t of tanks; let i = index">
           <div class="tank-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
           </div>
           <div class="tank-info">
             <p class="tank-name">{{ t.name }}</p>
-            <p class="tank-cap">Capacity: {{ t.capacity }}L · Current: {{ t.current }}L</p>
+            <p class="tank-cap">{{ language.t('capacity') }}: {{ t.capacity }}L - {{ language.t('current') }}: {{ t.current }}L</p>
             <div class="tank-bar">
               <div class="tank-fill" [style.width.%]="getLevel(t)" [ngClass]="{ 'low': getLevel(t) < 30 }"></div>
+            </div>
+            <div class="row-actions">
+              <button class="btn-ghost-sm" (click)="openForm(i)">{{ language.t('edit') }}</button>
+              <button class="btn-ghost-sm" (click)="replenish(i)">{{ language.t('refill') }}</button>
+              <button class="btn-ghost-sm" (click)="removeTank(i)">{{ language.t('remove') }}</button>
             </div>
           </div>
           <span class="tank-pct">{{ getLevel(t) }}%</span>
@@ -43,15 +58,14 @@
       </div>
     </div>
 
-    <!-- COST SAVINGS -->
     <div class="card savings-card">
-      <h3>Cost Savings</h3>
+      <h3>{{ language.t('costSavings') }}</h3>
       <div class="savings-chart">
         <div class="savings-badge">Saved</div>
       </div>
       <div class="savings-stats">
-        <div class="s-row"><span>Cost Savings</span><strong>$2,340</strong></div>
-        <div class="s-row"><span>Fill time Average</span><strong>2.3 h</strong></div>
+        <div class="s-row"><span>{{ language.t('costSavings') }}</span><strong>${{ savings | number }}</strong></div>
+        <div class="s-row"><span>{{ language.t('fillTimeAverage') }}</span><strong>{{ fillAverage }}</strong></div>
       </div>
     </div>
   </div>
