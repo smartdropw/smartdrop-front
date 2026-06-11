@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { LanguageService } from '../language/language.service';
+import { AuthService } from '../../iam/infrastructure/services/auth.service';
 
 @Component({
   selector: 'app-layout',
@@ -10,12 +12,31 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./layout.component.scss'],
 })
 export class LayoutComponent {
+  constructor(
+    private router: Router,
+    public language: LanguageService,
+    private authService: AuthService,
+  ) {}
+
   navItems = [
-    { label: 'Dashboard', icon: 'grid', route: '/app/dashboard', badge: null },
-    { label: 'Alerts', icon: 'bell', route: '/app/alerts', badge: 3 },
-    { label: 'Reports', icon: 'bar-chart', route: '/app/reports', badge: null },
-    { label: 'Business', icon: 'briefcase', route: '/app/business', badge: null },
-    { label: 'Support', icon: 'help-circle', route: '/app/support', badge: null },
-    { label: 'Billing', icon: 'credit-card', route: '/app/billing', badge: null },
+    { labelKey: 'dashboard', icon: 'grid', route: '/app/dashboard', badge: null },
+    { labelKey: 'alerts', icon: 'bell', route: '/app/alerts', badge: null },
+    { labelKey: 'reports', icon: 'bar-chart', route: '/app/reports', badge: null },
+    { labelKey: 'business', icon: 'briefcase', route: '/app/business', badge: null },
+    { labelKey: 'support', icon: 'help-circle', route: '/app/support', badge: null },
+    { labelKey: 'billing', icon: 'credit-card', route: '/app/billing', badge: null },
   ];
+
+  logout() {
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }
+
+  get userName() {
+    return this.authService.getCurrentUser().fullName;
+  }
+
+  get userEmail() {
+    return this.authService.getCurrentUser().email;
+  }
 }
