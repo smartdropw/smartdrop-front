@@ -21,10 +21,7 @@ export class SupportComponent {
     { category: 'Billing question', id: '#5126127', status: 'solved' },
   ];
 
-  constructor(
-    public language: LanguageService,
-    private authService: AuthService,
-  ) {
+  constructor(public language: LanguageService, private authService: AuthService) {
     this.storageKey = this.authService.getStorageKey('support');
     if (!this.authService.isDefaultUser()) {
       this.tickets = [];
