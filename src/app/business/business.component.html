@@ -42,7 +42,7 @@
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
           </div>
           <div class="tank-info">
-            <p class="tank-name">{{ t.name }}</p>
+            <p class="tank-name">{{ language.t(t.name) }}</p>
             <p class="tank-cap">{{ language.t('capacity') }}: {{ t.capacity }}L - {{ language.t('current') }}: {{ t.current }}L</p>
             <div class="tank-bar">
               <div class="tank-fill" [style.width.%]="getLevel(t)" [ngClass]="{ 'low': getLevel(t) < 30 }"></div>

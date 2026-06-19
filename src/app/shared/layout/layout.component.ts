@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { LanguageService } from '../language/language.service';
 
 @Component({
   selector: 'app-layout',
@@ -18,4 +19,6 @@ export class LayoutComponent {
     { label: 'Support', icon: 'help-circle', route: '/app/support', badge: null },
     { label: 'Billing', icon: 'credit-card', route: '/app/billing', badge: null },
   ];
+
+  constructor(public language: LanguageService) {}
 }

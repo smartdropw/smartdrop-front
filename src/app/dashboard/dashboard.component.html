@@ -1,3 +1,6 @@
+<div style="background-color: #d4edda; color: #155724; padding: 15px; border-radius: 5px; margin: 20px 0; border: 1px solid #c3e6cb;">
+  <strong>Conexión Backend Activa:</strong> {{ mensajeDelServidor }}
+</div>
 <div class="dashboard">
   <div class="page-header">
     <h1>{{ language.t('dashboardTitle') }}</h1>
@@ -103,15 +106,15 @@
 
   <div class="card action-panel" *ngIf="selectedDevice">
     <strong>{{ selectedDevice.name }}</strong>
-    <span>{{ language.text(selectedDevice.location) }} - {{ selectedDevice.flow }} - {{ selectedDevice.daily }} - {{ selectedDevice.battery }}% {{ language.t('battery') }}</span>
+    <span>{{ language.t(selectedDevice.location) }} - {{ selectedDevice.flow }} - {{ selectedDevice.daily }} - {{ selectedDevice.battery }}% {{ language.t('battery') }}</span>
   </div>
 
   <div class="devices-grid">
     <div class="device-card" *ngFor="let d of devices; let i = index">
       <div class="device-header">
         <div>
-          <p class="device-name">{{ language.text(d.name) }}</p>
-          <p class="device-loc">{{ language.text(d.location) }}</p>
+          <p class="device-name">{{ language.t(d.name) }}</p>
+          <p class="device-loc">{{ language.t(d.location) }}</p>
         </div>
         <span class="status-dot" [ngClass]="'dot--' + d.status"></span>
       </div>
@@ -149,17 +152,17 @@
       </div>
       <div class="pattern-body">
         <div class="pattern-title-row">
-          <strong>{{ language.text(p.title) }}</strong>
+          <strong>{{ language.t(p.title) }}</strong>
           <span class="pattern-tag" [ngClass]="'tag--' + p.tag">{{ language.t(p.tag) }}</span>
         </div>
-        <p>{{ language.text(p.desc) }}</p>
-        <p class="pattern-meta">{{ language.t('locationLabel') }}: {{ p.location }} - {{ language.t('impactLabel') }}: {{ language.text(p.impact) }}</p>
+        <p>{{ language.t(p.desc) }}</p>
+        <p class="pattern-meta">{{ language.t('locationLabel') }}: {{ language.t(p.location) }} - {{ language.t('impactLabel') }}: {{ language.t(p.impact) }}</p>
         <div class="pattern-actions" *ngIf="p.tag !== 'resolved'">
           <button class="btn-ghost-sm" (click)="updatePattern(i, 'investigating')">{{ language.t('investigate') }}</button>
           <button class="btn-ghost-sm" (click)="updatePattern(i, 'resolved')">{{ language.t('markResolved') }}</button>
         </div>
       </div>
-      <span class="pattern-time">{{ language.text(p.time) }}</span>
+      <span class="pattern-time">{{ language.t(p.time) }}</span>
     </div>
   </div>
 </div>

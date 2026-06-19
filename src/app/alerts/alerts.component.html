@@ -3,29 +3,39 @@
     <h1>{{ language.t('alertsTitle') }}</h1>
     <p>{{ language.t('alertsSubtitle') }}</p>
   </div>
-  <div class="action-message" *ngIf="message">{{ message }}</div>
 
-  <!-- STATS -->
+  @if (message) {
+    <div class="action-message">{{ message }}</div>
+  }
+
   <div class="stats-grid">
-    <div class="stat-card" *ngFor="let s of stats" [ngClass]="'stat--' + s.color">
-      <div class="stat-left">
-        <p class="stat-label">{{ language.text(s.label) }}</p>
-        <p class="stat-value">{{ s.value }}</p>
+    @for (s of stats; track s.label) {
+      <div class="stat-card" [ngClass]="'stat--' + s.color">
+        <div class="stat-left">
+          <p class="stat-label">{{ language.text(s.label) }}</p>
+          <p class="stat-value">{{ s.value }}</p>
+        </div>
+        <div class="stat-icon">
+          @switch (s.icon) {
+            @case ('triangle') {
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+            }
+            @case ('clock') {
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            }
+            @case ('info') {
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            }
+            @case ('check') {
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            }
+          }
+        </div>
       </div>
-      <div class="stat-icon">
-        <ng-container [ngSwitch]="s.icon">
-          <svg *ngSwitchCase="'triangle'" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
-          <svg *ngSwitchCase="'clock'" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          <svg *ngSwitchCase="'info'" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          <svg *ngSwitchCase="'check'" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-        </ng-container>
-      </div>
-    </div>
+    }
   </div>
 
-  <!-- MAIN AREA -->
   <div class="content-row">
-    <!-- ACTIVE ALERTS -->
     <div class="card alerts-list-card">
       <h3>{{ language.t('activeAlerts') }}</h3>
       <div class="inline-form compact-form">
@@ -40,29 +50,38 @@
         <label>{{ language.t('description') }} <input type="text" [(ngModel)]="newAlert.desc" [placeholder]="language.t('alertDetailsPlaceholder')"></label>
         <button class="btn-primary" (click)="addAlert()">{{ language.t('addAlert') }}</button>
       </div>
+
       <div class="alerts-list">
-        <div class="alert-item" *ngFor="let a of activeAlerts" [ngClass]="'alert--' + a.type">
-          <div class="alert-icon">
-            <svg *ngIf="a.type === 'critical'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
-            <svg *ngIf="a.type === 'warning'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            <svg *ngIf="a.type === 'info'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        @for (a of activeAlerts; track a.title) {
+          <div class="alert-item" [ngClass]="'alert--' + a.type">
+            <div class="alert-icon">
+              @if (a.type === 'critical') {
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+              }
+              @if (a.type === 'warning') {
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              }
+              @if (a.type === 'info') {
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              }
+            </div>
+            <div class="alert-body">
+              <p class="alert-title">{{ language.text(a.title) }}</p>
+              <p class="alert-desc">{{ language.text(a.desc) }}</p>
+              <span class="alert-time">{{ language.text(a.time) }}</span>
+            </div>
+            <button class="btn-ghost-sm" (click)="resolveAlert(a)">{{ language.t('resolve') }}</button>
+            <button class="btn-ghost-sm" (click)="removeAlert(a)">{{ language.t('remove') }}</button>
           </div>
-          <div class="alert-body">
-            <p class="alert-title">{{ language.text(a.title) }}</p>
-            <p class="alert-desc">{{ language.text(a.desc) }}</p>
-            <span class="alert-time">{{ language.text(a.time) }}</span>
+        } @empty {
+          <div class="no-alerts">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <p>{{ language.t('allClear') }}</p>
           </div>
-          <button class="btn-ghost-sm" (click)="resolveAlert(a)">{{ language.t('resolve') }}</button>
-          <button class="btn-ghost-sm" (click)="removeAlert(a)">{{ language.t('remove') }}</button>
-        </div>
-        <div class="no-alerts" *ngIf="activeAlerts.length === 0">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-          <p>{{ language.t('allClear') }}</p>
-        </div>
+        }
       </div>
     </div>
 
-    <!-- NOTIFICATION SETTINGS -->
     <div class="card settings-card">
       <h3>{{ language.t('notificationSettings') }}</h3>
 

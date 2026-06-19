@@ -1,5 +1,4 @@
 <div class="app-shell">
-  <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="sidebar__brand">
       <div class="brand-logo">
@@ -12,26 +11,55 @@
     </div>
 
     <nav class="sidebar__nav">
-      <a
-        *ngFor="let item of navItems"
-        [routerLink]="item.route"
-        routerLinkActive="active"
-        class="nav-item"
-      >
-        <span class="nav-icon">
-          <ng-container [ngSwitch]="item.icon">
-            <svg *ngSwitchCase="'grid'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-            <svg *ngSwitchCase="'bell'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-            <svg *ngSwitchCase="'bar-chart'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
-            <svg *ngSwitchCase="'briefcase'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
-            <svg *ngSwitchCase="'help-circle'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            <svg *ngSwitchCase="'credit-card'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-          </ng-container>
-        </span>
-        <span class="nav-label">{{ item.label }}</span>
-        <span *ngIf="item.badge" class="nav-badge">{{ item.badge }}</span>
-      </a>
+      @for (item of navItems; track item.route) {
+        <a
+          [routerLink]="item.route"
+          routerLinkActive="active"
+          class="nav-item"
+        >
+          <span class="nav-icon">
+            @switch (item.icon) {
+              @case ('grid') {
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+              }
+              @case ('bell') {
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              }
+              @case ('bar-chart') {
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+              }
+              @case ('briefcase') {
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+              }
+              @case ('help-circle') {
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              }
+              @case ('credit-card') {
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+              }
+            }
+          </span>
+          <span class="nav-label">{{ language.t(item.label) }}</span>
+          @if (item.badge) {
+            <span class="nav-badge">{{ item.badge }}</span>
+          }
+        </a>
+      }
     </nav>
+
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; padding: 0 20px;">
+      <span style="font-size: 12px; font-weight: bold; color: #5c6e8a;">Language</span>
+
+      <button (click)="language.setLanguage('en')"
+              [ngStyle]="{'background-color': language.current === 'en' ? '#00b4d8' : '#fff', 'color': language.current === 'en' ? '#fff' : '#000', 'border': '1px solid #ddd', 'border-radius': '5px', 'padding': '5px 10px', 'cursor': 'pointer', 'font-weight': 'bold'}">
+        EN
+      </button>
+
+      <button (click)="language.setLanguage('es')"
+              [ngStyle]="{'background-color': language.current === 'es' ? '#00b4d8' : '#fff', 'color': language.current === 'es' ? '#fff' : '#000', 'border': '1px solid #ddd', 'border-radius': '5px', 'padding': '5px 10px', 'cursor': 'pointer', 'font-weight': 'bold'}">
+        ES
+      </button>
+    </div>
 
     <div class="sidebar__user">
       <div class="user-avatar">
@@ -51,7 +79,6 @@
     </div>
   </aside>
 
-  <!-- MAIN CONTENT -->
   <main class="main-content">
     <router-outlet></router-outlet>
   </main>
