@@ -25,11 +25,17 @@ export class LoginComponent {
   ) {}
 
   onLogin() {
-    if (this.authService.login(this.email, this.password)) {
-      this.router.navigate(['/app/dashboard']);
-    } else {
-      alert('Credenciales incorrectas.');
+    if (!this.email || !this.password) {
+      alert('Por favor, ingresa tu email y contraseña.');
+      return;
     }
+    this.authService.login(this.email, this.password).subscribe((success) => {
+      if (success) {
+        this.router.navigate(['/app/dashboard']);
+      } else {
+        alert('Credenciales incorrectas.');
+      }
+    });
   }
 
   togglePassword() {

@@ -214,6 +214,7 @@ export class LanguageService {
       monthly: 'Monthly',
       quarterly: 'Quarterly',
       annually: 'Annually',
+      users: 'Users',
     },
     es: {
       language: 'Idioma',
@@ -422,6 +423,7 @@ export class LanguageService {
       monthly: 'Mensual',
       quarterly: 'Trimestral',
       annually: 'Anual',
+      users: 'Usuarios',
     },
   };
 

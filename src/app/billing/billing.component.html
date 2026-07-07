@@ -34,14 +34,14 @@
 
         <div class="inline-form compact-form" *ngIf="showMethodForm">
           <label>{{ language.t('type') }}
-            <select [(ngModel)]="methodForm.type">
+            <select [(ngModel)]="methodForm.type" (ngModelChange)="onTypeChange()">
               <option value="visa">{{ language.t('card') }}</option>
               <option value="paypal">{{ language.t('paypal') }}</option>
               <option value="bank">{{ language.t('bank') }}</option>
             </select>
           </label>
-          <label>{{ language.t('name') }} <input type="text" [(ngModel)]="methodForm.label" placeholder="Visa **** 1234"></label>
-          <label>{{ language.t('detail') }} <input type="text" [(ngModel)]="methodForm.sub" placeholder="Expires 12/26"></label>
+          <label>{{ language.t('name') }} <input type="text" [(ngModel)]="methodForm.label" [placeholder]="namePlaceholder" (input)="onLabelInput($event)"></label>
+          <label>{{ language.t('detail') }} <input type="text" [(ngModel)]="methodForm.sub" [placeholder]="detailPlaceholder" (input)="onSubInput($event)" [maxLength]="methodForm.type === 'visa' ? 5 : 50"></label>
           <label><input type="checkbox" [(ngModel)]="methodForm.primary"> {{ language.t('primary') }}</label>
           <button class="btn-primary" (click)="addMethod()">{{ language.t('saveMethod') }}</button>
         </div>

@@ -1,0 +1,33 @@
+<div class="users-page">
+  <div class="page-header">
+    <h1>{{ language.t('users') }}</h1>
+    <p>Manage all registered users in the platform</p>
+  </div>
+  <div class="action-message" *ngIf="message">{{ message }}</div>
+
+  <div class="card">
+    <div class="users-table-container">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Registration Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of users">
+            <td>#{{ user.id }}</td>
+            <td>{{ user.fullName }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.createdAt | date:'medium' }}</td>
+          </tr>
+          <tr *ngIf="users.length === 0">
+            <td colspan="4" class="empty-state">No users found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

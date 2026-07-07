@@ -1,6 +1,7 @@
-import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
+import { OnInit, AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { LanguageService } from '../shared/language/language.service';
 import { AuthService } from '../iam/infrastructure/services/auth.service';
 
@@ -8,6 +9,7 @@ type DeviceStatus = 'online' | 'offline';
 type PatternStatus = 'active' | 'resolved' | 'investigating';
 
 interface Device {
+  deviceId?: number;
   name: string;
   location: string;
   flow: string;
@@ -17,6 +19,7 @@ interface Device {
 }
 
 interface Pattern {
+  patternId?: number;
   type: 'warning' | 'success';
   title: string;
   desc: string;
@@ -33,37 +36,11 @@ interface Pattern {
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
 })
-export class DashboardComponent implements AfterViewInit {
+export class DashboardComponent implements OnInit, AfterViewInit {
   @ViewChild('chartCanvas') chartCanvas!: ElementRef<HTMLCanvasElement>;
 
-  private readonly storageKey: string;
-
-  devices: Device[] = [
-    { name: 'Kitchen Sink Sensor', location: 'Kitchen', flow: '12.5 L/min', daily: '245 L', battery: 85, status: 'online' },
-    { name: 'Main Bathroom Sensor', location: 'Bathroom', flow: '18.2 L/min', daily: '357 L', battery: 92, status: 'online' },
-    { name: 'Garden Irrigation Sensor', location: 'Garden', flow: '0 L/min', daily: '156 L', battery: 15, status: 'offline' },
-  ];
-
-  patterns: Pattern[] = [
-    {
-      type: 'warning',
-      title: 'Unusual Nighttime Usage',
-      desc: 'High water consumption detected between 2:00 AM - 4:00 AM',
-      location: 'Main Bathroom',
-      impact: 'Potential leak - 45L wasted',
-      tag: 'active',
-      time: '2 hours ago',
-    },
-    {
-      type: 'success',
-      title: 'Peak Efficiency Period',
-      desc: 'Optimal water usage pattern detected during morning hours',
-      location: 'Kitchen',
-      impact: '15% more efficient than average',
-      tag: 'resolved',
-      time: '6 hours ago',
-    },
-  ];
+  devices: Device[] = [];
+  patterns: Pattern[] = [];
 
   soilMoisture = 45;
   irrigationNext = 'Tomorrow 6:00 AM';
@@ -81,16 +58,11 @@ export class DashboardComponent implements AfterViewInit {
     moisture: 45,
   };
 
-  constructor(public language: LanguageService, private authService: AuthService) {
-    this.storageKey = this.authService.getStorageKey('dashboard');
-    if (!this.authService.isDefaultUser()) {
-      this.devices = [];
-      this.patterns = [];
-      this.soilMoisture = 0;
-      this.irrigationNext = 'Not scheduled';
-      this.scheduleForm.moisture = 0;
-    }
-  }
+  constructor(
+    public language: LanguageService,
+    private authService: AuthService,
+    private http: HttpClient
+  ) {}
 
   get metrics() {
     const totalDaily = this.devices.reduce((sum, device) => sum + this.parseLiters(device.daily), 0);
@@ -112,15 +84,25 @@ export class DashboardComponent implements AfterViewInit {
     return this.showAllPatterns ? this.patterns : this.patterns.slice(0, 2);
   }
 
-  ngAfterViewInit() {
+  ngOnInit() {
     this.load();
-    this.drawChart();
+  }
+
+  ngAfterViewInit() {
+    setTimeout(() => this.drawChart());
   }
 
   toggleManualOverride() {
     this.manualOverride = !this.manualOverride;
     this.message = this.manualOverride ? 'Manual irrigation override enabled.' : 'Manual irrigation override disabled.';
-    this.save();
+    
+    const user = this.authService.getCurrentUser();
+    const userId = user.id || 1;
+    this.http.put(`${this.authService.apiUrl}/api/v1/inventory/irrigation/user/${userId}`, {
+      manualOverride: this.manualOverride,
+      soilMoisture: this.soilMoisture,
+      irrigationNext: this.irrigationNext
+    }).subscribe();
   }
 
   scheduleIrrigation() {
@@ -132,7 +114,14 @@ export class DashboardComponent implements AfterViewInit {
     this.soilMoisture = Number(this.scheduleForm.moisture);
     this.irrigationNext = `${this.scheduleForm.date} ${this.scheduleForm.time}`;
     this.message = `Irrigation scheduled for ${this.irrigationNext}.`;
-    this.save();
+    
+    const user = this.authService.getCurrentUser();
+    const userId = user.id || 1;
+    this.http.put(`${this.authService.apiUrl}/api/v1/inventory/irrigation/user/${userId}`, {
+      manualOverride: this.manualOverride,
+      soilMoisture: this.soilMoisture,
+      irrigationNext: this.irrigationNext
+    }).subscribe();
   }
 
   openDeviceForm(index?: number) {
@@ -148,31 +137,72 @@ export class DashboardComponent implements AfterViewInit {
       return;
     }
 
+    let flow = String(this.deviceForm.flow).trim();
+    if (flow && !flow.includes('L/min')) flow += ' L/min';
+    let daily = String(this.deviceForm.daily).trim();
+    if (daily && !daily.includes('L')) daily += ' L';
+
     const device = {
       ...this.deviceForm,
+      flow: flow || '0 L/min',
+      daily: daily || '0 L',
       battery: Math.max(0, Math.min(100, Number(this.deviceForm.battery) || 0)),
     };
 
-    if (this.editingDeviceIndex === null) {
-      this.devices.unshift(device);
-      this.message = 'Device added.';
-    } else {
-      this.devices[this.editingDeviceIndex] = device;
-      this.message = 'Device updated.';
-    }
+    const user = this.authService.getCurrentUser();
+    const userId = user.id || 1;
 
-    this.showDeviceForm = false;
-    this.editingDeviceIndex = null;
-    this.deviceForm = this.emptyDevice();
-    this.save();
-    setTimeout(() => this.drawChart());
+    if (this.editingDeviceIndex === null) {
+      this.http.post<Device>(`${this.authService.apiUrl}/api/v1/inventory/devices`, { ...device, userId }).subscribe({
+        next: (res) => {
+          this.devices.unshift(res);
+          this.message = 'Device added.';
+          this.showDeviceForm = false;
+          this.editingDeviceIndex = null;
+          this.deviceForm = this.emptyDevice();
+          setTimeout(() => this.drawChart());
+        }
+      });
+    } else {
+      const existing = this.editingDeviceIndex !== null ? this.devices[this.editingDeviceIndex] : null;
+      if (existing && existing.deviceId) {
+        this.http.put<Device>(`${this.authService.apiUrl}/api/v1/inventory/devices/${existing.deviceId}`, device).subscribe({
+          next: (res) => {
+            if (this.editingDeviceIndex !== null) {
+              this.devices[this.editingDeviceIndex] = res;
+            }
+            this.message = 'Device updated.';
+            this.showDeviceForm = false;
+            this.editingDeviceIndex = null;
+            this.deviceForm = this.emptyDevice();
+            setTimeout(() => this.drawChart());
+          }
+        });
+      }
+    }
   }
 
   removeDevice(index: number) {
-    const [device] = this.devices.splice(index, 1);
-    this.message = `${device.name} removed.`;
-    this.selectedDevice = null;
-    this.save();
+    if (index === null || index === undefined || index < 0 || index >= this.devices.length) {
+      return;
+    }
+    const device = this.devices[index];
+    if (!device) return;
+
+    if (device.deviceId) {
+      this.http.delete(`${this.authService.apiUrl}/api/v1/inventory/devices/${device.deviceId}`).subscribe({
+        next: () => {
+          this.devices.splice(index, 1);
+          this.message = `${device.name} removed.`;
+          this.selectedDevice = null;
+          setTimeout(() => this.drawChart());
+        }
+      });
+    } else {
+      this.devices.splice(index, 1);
+      this.selectedDevice = null;
+      setTimeout(() => this.drawChart());
+    }
   }
 
   showDetails(device: Device) {
@@ -181,11 +211,20 @@ export class DashboardComponent implements AfterViewInit {
   }
 
   updatePattern(index: number, tag: PatternStatus) {
-    this.patterns[index].tag = tag;
-    this.patterns[index].type = tag === 'resolved' ? 'success' : 'warning';
-    this.patterns[index].time = 'Just now';
-    this.message = tag === 'resolved' ? 'Pattern marked as resolved.' : 'Pattern moved to investigation.';
-    this.save();
+    const pattern = this.patterns[index];
+    if (pattern.patternId) {
+      this.http.put<Pattern>(`${this.authService.apiUrl}/api/v1/analytics/patterns/${pattern.patternId}/status`, { tag }).subscribe({
+        next: (res) => {
+          this.patterns[index] = res;
+          this.message = tag === 'resolved' ? 'Pattern marked as resolved.' : 'Pattern moved to investigation.';
+        }
+      });
+    } else {
+      pattern.tag = tag;
+      pattern.type = tag === 'resolved' ? 'success' : 'warning';
+      pattern.time = 'Just now';
+      this.message = tag === 'resolved' ? 'Pattern marked as resolved.' : 'Pattern moved to investigation.';
+    }
   }
 
   drawChart() {
@@ -251,7 +290,7 @@ export class DashboardComponent implements AfterViewInit {
   }
 
   private emptyDevice(): Device {
-    return { name: '', location: '', flow: '0 L/min', daily: '0 L', battery: 100, status: 'online' };
+    return { name: '', location: '', flow: '', daily: '', battery: 100, status: 'online' };
   }
 
   private parseLiters(value: string) {
@@ -262,24 +301,50 @@ export class DashboardComponent implements AfterViewInit {
     return Number(String(value).replace(/[^0-9.]/g, '')) || 0;
   }
 
-  private save() {
-    localStorage.setItem(this.storageKey, JSON.stringify({
-      devices: this.devices,
-      patterns: this.patterns,
-      soilMoisture: this.soilMoisture,
-      irrigationNext: this.irrigationNext,
-      manualOverride: this.manualOverride,
-    }));
-  }
-
   private load() {
-    const saved = localStorage.getItem(this.storageKey);
-    if (!saved) return;
-    const data = JSON.parse(saved);
-    this.devices = data.devices ?? this.devices;
-    this.patterns = data.patterns ?? this.patterns;
-    this.soilMoisture = data.soilMoisture ?? this.soilMoisture;
-    this.irrigationNext = data.irrigationNext ?? this.irrigationNext;
-    this.manualOverride = data.manualOverride ?? this.manualOverride;
+    const user = this.authService.getCurrentUser();
+    const userId = user.id || 1;
+
+    // 1. Load devices
+    this.http.get<Device[]>(`${this.authService.apiUrl}/api/v1/inventory/devices/user/${userId}`).subscribe({
+      next: (data) => {
+        this.devices = data || [];
+        this.drawChart();
+      },
+      error: () => {
+        this.devices = [];
+        this.drawChart();
+      }
+    });
+
+    // 2. Load irrigation config
+    this.http.get<any>(`${this.authService.apiUrl}/api/v1/inventory/irrigation/user/${userId}`).subscribe({
+      next: (data) => {
+        if (data) {
+          this.soilMoisture = data.soilMoisture ?? 0;
+          this.irrigationNext = data.irrigationNext ?? 'Not scheduled';
+          this.manualOverride = data.manualOverride ?? false;
+        } else {
+          this.soilMoisture = 0;
+          this.irrigationNext = 'Not scheduled';
+          this.manualOverride = false;
+        }
+      },
+      error: () => {
+        this.soilMoisture = 0;
+        this.irrigationNext = 'Not scheduled';
+        this.manualOverride = false;
+      }
+    });
+
+    // 3. Load patterns
+    this.http.get<Pattern[]>(`${this.authService.apiUrl}/api/v1/analytics/patterns/user/${userId}`).subscribe({
+      next: (data) => {
+        this.patterns = data || [];
+      },
+      error: () => {
+        this.patterns = [];
+      }
+    });
   }
 }

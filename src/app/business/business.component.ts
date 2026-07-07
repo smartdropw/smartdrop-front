@@ -1,10 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { LanguageService } from '../shared/language/language.service';
 import { AuthService } from '../iam/infrastructure/services/auth.service';
 
 interface Tank {
+  tankId?: number;
   name: string;
   capacity: number;
   current: number;
@@ -17,25 +19,21 @@ interface Tank {
   templateUrl: './business.component.html',
   styleUrls: ['./business.component.scss'],
 })
-export class BusinessComponent {
-  private readonly storageKey: string;
-
-  tanks: Tank[] = [
-    { name: 'MAIN TANK', capacity: 5000, current: 4200 },
-    { name: 'Reserve Tank A', capacity: 5000, current: 4200 },
-    { name: 'Reserve Tank B', capacity: 5000, current: 4200 },
-  ];
+export class BusinessComponent implements OnInit {
+  tanks: Tank[] = [];
 
   showForm = false;
   editingIndex: number | null = null;
   form: Tank = this.emptyTank();
   message = '';
 
-  constructor(public language: LanguageService, private authService: AuthService) {
-    this.storageKey = this.authService.getStorageKey('business');
-    if (!this.authService.isDefaultUser()) {
-      this.tanks = [];
-    }
+  constructor(
+    public language: LanguageService,
+    private authService: AuthService,
+    private http: HttpClient
+  ) {}
+
+  ngOnInit() {
     this.load();
   }
 
@@ -58,8 +56,8 @@ export class BusinessComponent {
   }
 
   openForm(index?: number) {
-    this.editingIndex = typeof index === 'number' ? index : null;
-    this.form = typeof index === 'number' ? { ...this.tanks[index] } : this.emptyTank();
+    this.editingIndex = (typeof index === 'number' && this.tanks[index]) ? index : null;
+    this.form = (typeof index === 'number' && this.tanks[index]) ? { ...this.tanks[index] } : this.emptyTank();
     this.showForm = true;
   }
 
@@ -69,50 +67,87 @@ export class BusinessComponent {
       return;
     }
 
-    const tank = {
+    const payload = {
       name: this.form.name,
       capacity: Number(this.form.capacity),
       current: Math.min(Number(this.form.current) || 0, Number(this.form.capacity)),
     };
 
-    if (this.editingIndex === null) {
-      this.tanks.unshift(tank);
-      this.message = 'Tank added.';
-    } else {
-      this.tanks[this.editingIndex] = tank;
-      this.message = 'Tank updated.';
-    }
+    const user = this.authService.getCurrentUser();
+    const userId = user.id || 1;
 
-    this.showForm = false;
-    this.form = this.emptyTank();
-    this.editingIndex = null;
-    this.save();
+    if (this.editingIndex === null) {
+      this.http.post<Tank>(`${this.authService.apiUrl}/api/v1/inventory/tanks`, { ...payload, userId }).subscribe({
+        next: (res) => {
+          this.tanks.unshift(res);
+          this.message = 'Tank added.';
+          this.showForm = false;
+          this.form = this.emptyTank();
+        }
+      });
+    } else {
+      const existing = this.tanks[this.editingIndex];
+      if (existing && existing.tankId) {
+        this.http.put<Tank>(`${this.authService.apiUrl}/api/v1/inventory/tanks/${existing.tankId}`, payload).subscribe({
+          next: (res) => {
+            this.tanks[this.editingIndex!] = res;
+            this.message = 'Tank updated.';
+            this.showForm = false;
+            this.form = this.emptyTank();
+            this.editingIndex = null;
+          }
+        });
+      }
+    }
   }
 
   replenish(index: number) {
-    this.tanks[index].current = this.tanks[index].capacity;
-    this.message = `${this.tanks[index].name} replenished.`;
-    this.save();
+    const tank = this.tanks[index];
+    if (!tank) return;
+    if (tank.tankId) {
+      this.http.put<Tank>(`${this.authService.apiUrl}/api/v1/inventory/tanks/${tank.tankId}/replenish`, {}).subscribe({
+        next: (res) => {
+          this.tanks[index] = res;
+          this.message = `${tank.name} replenished.`;
+        }
+      });
+    } else {
+      tank.current = tank.capacity;
+      this.message = `${tank.name} replenished.`;
+    }
   }
 
   removeTank(index: number) {
-    const [tank] = this.tanks.splice(index, 1);
-    this.message = `${tank.name} removed.`;
-    this.save();
+    const tank = this.tanks[index];
+    if (!tank) return;
+    if (tank.tankId) {
+      this.http.delete(`${this.authService.apiUrl}/api/v1/inventory/tanks/${tank.tankId}`).subscribe({
+        next: () => {
+          this.tanks.splice(index, 1);
+          this.message = `${tank.name} removed.`;
+        }
+      });
+    } else {
+      this.tanks.splice(index, 1);
+      this.message = `${tank.name} removed.`;
+    }
   }
 
   private emptyTank(): Tank {
     return { name: '', capacity: 5000, current: 0 };
   }
 
-  private save() {
-    localStorage.setItem(this.storageKey, JSON.stringify({ tanks: this.tanks }));
-  }
-
   private load() {
-    const saved = localStorage.getItem(this.storageKey);
-    if (!saved) return;
-    const data = JSON.parse(saved);
-    this.tanks = data.tanks ?? this.tanks;
+    const user = this.authService.getCurrentUser();
+    const userId = user.id || 1;
+
+    this.http.get<Tank[]>(`${this.authService.apiUrl}/api/v1/inventory/tanks/user/${userId}`).subscribe({
+      next: (data) => {
+        this.tanks = data || [];
+      },
+      error: () => {
+        this.tanks = [];
+      }
+    });
   }
 }

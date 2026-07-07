@@ -37,8 +37,14 @@ export class RegisterComponent {
       return;
     }
 
-    this.authService.register(this.email, this.password, this.fullName);
-    alert('Usuario guardado con éxito');
-    this.router.navigate(['/login']);
+    this.authService.register(this.email, this.password, this.fullName).subscribe({
+      next: () => {
+        alert('Usuario guardado con éxito');
+        this.router.navigate(['/login']);
+      },
+      error: () => {
+        alert('Error al registrar usuario. Inténtalo de nuevo.');
+      }
+    });
   }
 }

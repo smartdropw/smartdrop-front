@@ -86,8 +86,8 @@
     <h3>{{ editingDeviceIndex === null ? language.t('addDeviceTitle') : language.t('editDeviceTitle') }}</h3>
     <label>{{ language.t('name') }} <input type="text" [(ngModel)]="deviceForm.name" placeholder="Sensor name"></label>
     <label>{{ language.t('location') }} <input type="text" [(ngModel)]="deviceForm.location" placeholder="Kitchen, Garden..."></label>
-    <label>{{ language.t('currentFlow') }} <input type="text" [(ngModel)]="deviceForm.flow" placeholder="12.5 L/min"></label>
-    <label>{{ language.t('dailyUsage') }} <input type="text" [(ngModel)]="deviceForm.daily" placeholder="245 L"></label>
+    <label>{{ language.t('currentFlow') }} <input type="text" [(ngModel)]="deviceForm.flow" placeholder="12.5"></label>
+    <label>{{ language.t('dailyUsage') }} <input type="text" [(ngModel)]="deviceForm.daily" placeholder="245"></label>
     <label>{{ language.t('battery') }} <input type="number" min="0" max="100" [(ngModel)]="deviceForm.battery"></label>
     <label>{{ language.t('status') }}
       <select [(ngModel)]="deviceForm.status">

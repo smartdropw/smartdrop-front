@@ -1,16 +1,19 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { LanguageService } from '../shared/language/language.service';
 import { AuthService } from '../iam/infrastructure/services/auth.service';
 
 interface Transaction {
+  transactionId?: number;
   name: string;
   date: string;
   amount: number;
 }
 
 interface PaymentMethod {
+  paymentMethodId?: number;
   type: 'visa' | 'paypal' | 'bank';
   label: string;
   sub: string;
@@ -24,41 +27,32 @@ interface PaymentMethod {
   templateUrl: './billing.component.html',
   styleUrls: ['./billing.component.scss'],
 })
-export class BillingComponent {
+export class BillingComponent implements OnInit {
   Math = Math;
   private readonly storageKey: string;
 
   settings = { autoPay: true, emailNotif: true, smsAlerts: false, cycle: 'Monthly' };
-  walletBalance = 125.75;
+  walletBalance = 0;
   walletAmount = 25;
   showMethodForm = false;
   showAllTransactions = false;
   message = '';
 
-  transactions: Transaction[] = [
-    { name: 'Monthly Service', date: 'Dec 1, 2024', amount: -189.30 },
-    { name: 'Tank Refill', date: 'Nov 28, 2024', amount: -75.00 },
-    { name: 'Maintenance Fee', date: 'Nov 25, 2024', amount: -45.00 },
-    { name: 'Refund', date: 'Nov 20, 2024', amount: 25.00 },
-  ];
-
-  paymentMethods: PaymentMethod[] = [
-    { type: 'visa', label: 'Visa **** 4242', sub: 'Expires 12/25', primary: true },
-    { type: 'paypal', label: 'PayPal', sub: 'user@example.com', primary: false },
-    { type: 'bank', label: 'Bank Transfer', sub: '**** 7890', primary: false },
-  ];
-
+  transactions: Transaction[] = [];
+  paymentMethods: PaymentMethod[] = [];
   methodForm: PaymentMethod = this.emptyMethod();
 
-  constructor(public language: LanguageService, private authService: AuthService) {
-    this.storageKey = this.authService.getStorageKey('billing');
-    if (!this.authService.isDefaultUser()) {
-      this.transactions = [];
-      this.paymentMethods = [];
-      this.walletBalance = 0;
-      this.settings = { autoPay: false, emailNotif: true, smsAlerts: false, cycle: 'Monthly' };
-    }
-    this.load();
+  constructor(
+    public language: LanguageService,
+    private authService: AuthService,
+    private http: HttpClient
+  ) {
+    this.storageKey = this.authService.getStorageKey('billing-settings');
+  }
+
+  ngOnInit() {
+    this.loadSettings();
+    this.loadBillingData();
   }
 
   get currentBalance() {
@@ -74,48 +68,144 @@ export class BillingComponent {
     return this.showAllTransactions ? this.transactions : this.transactions.slice(0, 4);
   }
 
+  get namePlaceholder() {
+    switch (this.methodForm.type) {
+      case 'paypal': return 'email@paypal.com';
+      case 'bank': return 'IBAN / Account Number';
+      case 'visa': default: return '0000 0000 0000 0000';
+    }
+  }
+
+  get detailPlaceholder() {
+    switch (this.methodForm.type) {
+      case 'paypal': return 'PayPal Account';
+      case 'bank': return 'Bank Name';
+      case 'visa': default: return 'MM/YY';
+    }
+  }
+
+  onTypeChange() {
+    this.methodForm.label = '';
+    this.methodForm.sub = '';
+  }
+
+  onLabelInput(event: any) {
+    if (this.methodForm.type === 'visa') {
+      let val = event.target.value.replace(/\D/g, '').substring(0, 16);
+      val = val.replace(/(\d{4})(?=\d)/g, '$1 ');
+      event.target.value = val;
+      this.methodForm.label = val;
+    }
+  }
+
+  onSubInput(event: any) {
+    if (this.methodForm.type === 'visa') {
+      let val = event.target.value.replace(/\D/g, '').substring(0, 4);
+      if (val.length > 2) {
+        val = val.substring(0, 2) + '/' + val.substring(2, 4);
+      }
+      event.target.value = val;
+      this.methodForm.sub = val;
+    }
+  }
+
   addMethod() {
     if (!this.methodForm.label || !this.methodForm.sub) {
       this.message = 'Payment method name and detail are required.';
       return;
     }
 
-    if (this.methodForm.primary) {
-      this.paymentMethods.forEach((method) => method.primary = false);
-    }
+    const user = this.authService.getCurrentUser();
+    const userId = user.id || 1;
 
-    this.paymentMethods.unshift({ ...this.methodForm });
-    this.methodForm = this.emptyMethod();
-    this.showMethodForm = false;
-    this.message = 'Payment method added.';
-    this.save();
+    const payload = {
+      userId,
+      type: this.methodForm.type,
+      label: this.methodForm.label,
+      sub: this.methodForm.sub,
+      primary: this.methodForm.primary
+    };
+
+    this.http.post<any>(`${this.authService.apiUrl}/api/v1/finance/payment-methods`, payload).subscribe({
+      next: (res) => {
+        if (res.primary) {
+          this.paymentMethods.forEach((method) => method.primary = false);
+        }
+        this.paymentMethods.unshift({
+          paymentMethodId: res.paymentMethodId,
+          type: res.type as 'visa' | 'paypal' | 'bank',
+          label: res.label,
+          sub: res.sub,
+          primary: res.primary
+        });
+        this.methodForm = this.emptyMethod();
+        this.showMethodForm = false;
+        this.message = 'Payment method added.';
+      }
+    });
   }
 
   setPrimary(index: number) {
-    this.paymentMethods.forEach((method, i) => method.primary = i === index);
-    this.message = 'Primary payment method updated.';
-    this.save();
+    const method = this.paymentMethods[index];
+    if (!method) return;
+    const user = this.authService.getCurrentUser();
+    const userId = user.id || 1;
+
+    if (method.paymentMethodId) {
+      this.http.put<any>(`${this.authService.apiUrl}/api/v1/finance/payment-methods/${method.paymentMethodId}/primary/user/${userId}`, {}).subscribe({
+        next: () => {
+          this.paymentMethods.forEach((m, i) => m.primary = i === index);
+          this.message = 'Primary payment method updated.';
+        }
+      });
+    } else {
+      this.paymentMethods.forEach((m, i) => m.primary = i === index);
+      this.message = 'Primary payment method updated.';
+    }
   }
 
   removeMethod(index: number) {
-    const [method] = this.paymentMethods.splice(index, 1);
-    if (method.primary && this.paymentMethods.length) this.paymentMethods[0].primary = true;
-    this.message = 'Payment method removed.';
-    this.save();
+    const method = this.paymentMethods[index];
+    if (!method) return;
+    if (method.paymentMethodId) {
+      this.http.delete(`${this.authService.apiUrl}/api/v1/finance/payment-methods/${method.paymentMethodId}`).subscribe({
+        next: () => {
+          this.paymentMethods.splice(index, 1);
+          if (method.primary && this.paymentMethods.length) {
+            this.setPrimary(0);
+          }
+          this.message = 'Payment method removed.';
+        }
+      });
+    } else {
+      this.paymentMethods.splice(index, 1);
+      if (method.primary && this.paymentMethods.length) this.paymentMethods[0].primary = true;
+      this.message = 'Payment method removed.';
+    }
   }
 
   saveSettings() {
+    localStorage.setItem(this.storageKey, JSON.stringify(this.settings));
     this.message = 'Billing settings saved.';
-    this.save();
   }
 
   addFunds() {
     const amount = Number(this.walletAmount);
     if (amount <= 0) return;
-    this.walletBalance += amount;
-    this.transactions.unshift({ name: 'Wallet Funds Added', date: 'Today', amount });
-    this.message = `$${amount.toFixed(2)} added to wallet.`;
-    this.save();
+
+    const user = this.authService.getCurrentUser();
+    const userId = user.id || 1;
+
+    this.http.post<any>(`${this.authService.apiUrl}/api/v1/finance/wallet/user/${userId}/add-funds`, {
+      amount,
+      transactionName: 'Wallet Funds Added'
+    }).subscribe({
+      next: (res) => {
+        this.walletBalance = res.balance;
+        this.loadTransactions(userId);
+        this.message = `$${amount.toFixed(2)} added to wallet.`;
+      }
+    });
   }
 
   withdraw() {
@@ -124,32 +214,88 @@ export class BillingComponent {
       this.message = 'Enter an amount available in the wallet.';
       return;
     }
-    this.walletBalance -= amount;
-    this.transactions.unshift({ name: 'Wallet Withdrawal', date: 'Today', amount: -amount });
-    this.message = `$${amount.toFixed(2)} withdrawn from wallet.`;
-    this.save();
+
+    const user = this.authService.getCurrentUser();
+    const userId = user.id || 1;
+
+    this.http.post<any>(`${this.authService.apiUrl}/api/v1/finance/wallet/user/${userId}/withdraw`, {
+      amount,
+      transactionName: 'Wallet Withdrawal'
+    }).subscribe({
+      next: (res) => {
+        this.walletBalance = res.balance;
+        this.loadTransactions(userId);
+        this.message = `$${amount.toFixed(2)} withdrawn from wallet.`;
+      }
+    });
   }
 
   private emptyMethod(): PaymentMethod {
     return { type: 'visa', label: '', sub: '', primary: false };
   }
 
-  private save() {
-    localStorage.setItem(this.storageKey, JSON.stringify({
-      settings: this.settings,
-      transactions: this.transactions,
-      paymentMethods: this.paymentMethods,
-      walletBalance: this.walletBalance,
-    }));
+  private loadSettings() {
+    const saved = localStorage.getItem(this.storageKey);
+    if (saved) {
+      this.settings = JSON.parse(saved);
+    }
   }
 
-  private load() {
-    const saved = localStorage.getItem(this.storageKey);
-    if (!saved) return;
-    const data = JSON.parse(saved);
-    this.settings = data.settings ?? this.settings;
-    this.transactions = data.transactions ?? this.transactions;
-    this.paymentMethods = data.paymentMethods ?? this.paymentMethods;
-    this.walletBalance = data.walletBalance ?? this.walletBalance;
+  private loadBillingData() {
+    const user = this.authService.getCurrentUser();
+    const userId = user.id || 1;
+
+    // Load Wallet
+    this.http.get<any>(`${this.authService.apiUrl}/api/v1/finance/wallet/user/${userId}`).subscribe({
+      next: (res) => {
+        this.walletBalance = res.balance;
+        this.loadTransactions(userId);
+      },
+      error: () => {
+        this.walletBalance = 0;
+      }
+    });
+
+    // Load Payment Methods
+    this.http.get<any[]>(`${this.authService.apiUrl}/api/v1/finance/payment-methods/user/${userId}`).subscribe({
+      next: (data) => {
+        this.paymentMethods = (data || []).map(item => ({
+          paymentMethodId: item.paymentMethodId,
+          type: item.type as 'visa' | 'paypal' | 'bank',
+          label: item.label,
+          sub: item.sub,
+          primary: item.primary
+        }));
+      },
+      error: () => {
+        this.paymentMethods = [];
+      }
+    });
+  }
+
+  private loadTransactions(userId: number) {
+    this.http.get<any[]>(`${this.authService.apiUrl}/api/v1/finance/wallet/user/${userId}/transactions`).subscribe({
+      next: (data) => {
+        this.transactions = (data || []).map(tx => ({
+          transactionId: tx.transactionId,
+          name: tx.name,
+          amount: tx.amount,
+          date: this.formatDate(tx.transactionDate)
+        }));
+      },
+      error: () => {
+        this.transactions = [];
+      }
+    });
+  }
+
+  private formatDate(dateStr?: string): string {
+    if (!dateStr) return 'Today';
+    try {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    } catch {
+      return 'Today';
+    }
   }
 }

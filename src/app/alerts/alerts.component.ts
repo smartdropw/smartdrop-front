@@ -1,12 +1,14 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { LanguageService } from '../shared/language/language.service';
 import { AuthService } from '../iam/infrastructure/services/auth.service';
 
 type AlertType = 'critical' | 'warning' | 'info';
 
 interface AlertItem {
+  alertId?: number;
   type: AlertType;
   title: string;
   desc: string;
@@ -21,14 +23,10 @@ interface AlertItem {
   templateUrl: './alerts.component.html',
   styleUrls: ['./alerts.component.scss'],
 })
-export class AlertsComponent {
+export class AlertsComponent implements OnInit {
   private readonly storageKey: string;
 
-  alerts: AlertItem[] = [
-    { type: 'critical', title: 'Water Pressure Critical', desc: 'Main tank pressure dropped below 15 PSI', time: '2 minutes ago' },
-    { type: 'warning', title: 'High Water Usage Detected', desc: 'Usage 40% above normal for this time', time: '15 minutes ago' },
-    { type: 'info', title: 'Scheduled Maintenance Due', desc: 'Filter replacement scheduled for tomorrow', time: '1 hour ago' },
-  ];
+  alerts: AlertItem[] = [];
 
   settings = {
     criticalAlerts: true,
@@ -42,20 +40,17 @@ export class AlertsComponent {
   newAlert: AlertItem = this.emptyAlert();
   message = '';
 
-  constructor(public language: LanguageService, private authService: AuthService) {
-    this.storageKey = this.authService.getStorageKey('alerts');
-    if (!this.authService.isDefaultUser()) {
-      this.alerts = [];
-      this.settings = {
-        criticalAlerts: true,
-        usageWarnings: true,
-        maintenanceReminders: true,
-        pushNotifications: true,
-        email: true,
-        sms: false,
-      };
-    }
-    this.load();
+  constructor(
+    public language: LanguageService,
+    private authService: AuthService,
+    private http: HttpClient
+  ) {
+    this.storageKey = this.authService.getStorageKey('alerts-settings');
+  }
+
+  ngOnInit() {
+    this.loadSettings();
+    this.loadAlerts();
   }
 
   get stats() {
@@ -77,28 +72,65 @@ export class AlertsComponent {
       return;
     }
 
-    this.alerts.unshift({ ...this.newAlert, time: 'Just now' });
-    this.newAlert = this.emptyAlert();
-    this.message = 'Alert added.';
-    this.save();
+    const user = this.authService.getCurrentUser();
+    const userId = user.id || 1;
+
+    const payload = {
+      userId,
+      type: this.newAlert.type,
+      title: this.newAlert.title,
+      description: this.newAlert.desc
+    };
+
+    this.http.post<any>(`${this.authService.apiUrl}/api/v1/support/alerts`, payload).subscribe({
+      next: (res) => {
+        this.alerts.unshift({
+          alertId: res.alertId,
+          type: res.type as AlertType,
+          title: res.title,
+          desc: res.description,
+          resolved: res.resolved,
+          time: 'Just now'
+        });
+        this.newAlert = this.emptyAlert();
+        this.message = 'Alert added.';
+      }
+    });
   }
 
   resolveAlert(alert: AlertItem) {
-    alert.resolved = true;
-    alert.time = 'Resolved just now';
-    this.message = `${alert.title} resolved.`;
-    this.save();
+    if (alert.alertId) {
+      this.http.put<any>(`${this.authService.apiUrl}/api/v1/support/alerts/${alert.alertId}/resolve`, {}).subscribe({
+        next: () => {
+          alert.resolved = true;
+          alert.time = 'Resolved just now';
+          this.message = `${alert.title} resolved.`;
+        }
+      });
+    } else {
+      alert.resolved = true;
+      alert.time = 'Resolved just now';
+      this.message = `${alert.title} resolved.`;
+    }
   }
 
   removeAlert(alert: AlertItem) {
-    this.alerts = this.alerts.filter((item) => item !== alert);
-    this.message = 'Alert removed.';
-    this.save();
+    if (alert.alertId) {
+      this.http.delete(`${this.authService.apiUrl}/api/v1/support/alerts/${alert.alertId}`).subscribe({
+        next: () => {
+          this.alerts = this.alerts.filter((item) => item !== alert);
+          this.message = 'Alert removed.';
+        }
+      });
+    } else {
+      this.alerts = this.alerts.filter((item) => item !== alert);
+      this.message = 'Alert removed.';
+    }
   }
 
   saveSettings() {
+    localStorage.setItem(this.storageKey, JSON.stringify(this.settings));
     this.message = 'Notification settings saved.';
-    this.save();
   }
 
   private count(type: AlertType) {
@@ -109,15 +141,47 @@ export class AlertsComponent {
     return { type: 'info', title: '', desc: '', time: 'Just now' };
   }
 
-  private save() {
-    localStorage.setItem(this.storageKey, JSON.stringify({ alerts: this.alerts, settings: this.settings }));
+  private loadSettings() {
+    const saved = localStorage.getItem(this.storageKey);
+    if (saved) {
+      this.settings = JSON.parse(saved);
+    }
   }
 
-  private load() {
-    const saved = localStorage.getItem(this.storageKey);
-    if (!saved) return;
-    const data = JSON.parse(saved);
-    this.alerts = data.alerts ?? this.alerts;
-    this.settings = data.settings ?? this.settings;
+  private loadAlerts() {
+    const user = this.authService.getCurrentUser();
+    const userId = user.id || 1;
+
+    this.http.get<any[]>(`${this.authService.apiUrl}/api/v1/support/alerts/user/${userId}`).subscribe({
+      next: (data) => {
+        this.alerts = (data || []).map(item => ({
+          alertId: item.alertId,
+          type: item.type as AlertType,
+          title: item.title,
+          desc: item.description,
+          resolved: item.resolved,
+          time: this.formatTime(item.createdAt)
+        }));
+      },
+      error: () => {
+        this.alerts = [];
+      }
+    });
+  }
+
+  private formatTime(createdAtStr?: string): string {
+    if (!createdAtStr) return 'Just now';
+    try {
+      const date = new Date(createdAtStr);
+      const diffMs = Date.now() - date.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      if (diffMins < 1) return 'Just now';
+      if (diffMins < 60) return `${diffMins} minutes ago`;
+      const diffHrs = Math.floor(diffMins / 60);
+      if (diffHrs < 24) return `${diffHrs} hours ago`;
+      return date.toLocaleDateString();
+    } catch {
+      return 'Recent';
+    }
   }
 }

@@ -42,8 +42,10 @@
               <p class="ticket-id">{{ language.text('ticket') }} {{ t.id }}</p>
             </div>
             <span class="ticket-badge" [ngClass]="'badge--' + t.status">{{ language.t(t.status) }}</span>
-            <button class="btn-ghost-sm" *ngIf="t.status !== 'solved'" (click)="markSolved(i)">{{ language.t('solve') }}</button>
-            <button class="btn-ghost-sm" (click)="removeTicket(i)">{{ language.t('remove') }}</button>
+            <div class="ticket-actions" *ngIf="isAdmin" style="margin-left:auto; display:flex; gap:6px;">
+              <button class="btn-ghost-sm" (click)="markSolved(i)" *ngIf="t.status !== 'solved'">{{ language.t('solve') }}</button>
+              <button class="btn-ghost-sm" style="color:var(--danger)" (click)="removeTicket(i)">{{ language.t('remove') }}</button>
+            </div>
           </div>
         </div>
       </div>

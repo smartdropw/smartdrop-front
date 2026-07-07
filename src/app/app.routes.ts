@@ -43,6 +43,11 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./billing/billing.component').then((m) => m.BillingComponent),
       },
+      {
+        path: 'admin-users',
+        loadComponent: () =>
+          import('./admin-users/admin-users.component').then((m) => m.AdminUsersComponent),
+      },
     ],
   },
   { path: '**', redirectTo: 'login' },

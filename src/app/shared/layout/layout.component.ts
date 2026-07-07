@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { LanguageService } from '../language/language.service';
@@ -11,13 +11,7 @@ import { AuthService } from '../../iam/infrastructure/services/auth.service';
   templateUrl: './layout.component.html',
   styleUrls: ['./layout.component.scss'],
 })
-export class LayoutComponent {
-  constructor(
-    private router: Router,
-    public language: LanguageService,
-    private authService: AuthService,
-  ) {}
-
+export class LayoutComponent implements OnInit {
   navItems = [
     { labelKey: 'dashboard', icon: 'grid', route: '/app/dashboard', badge: null },
     { labelKey: 'alerts', icon: 'bell', route: '/app/alerts', badge: null },
@@ -26,6 +20,18 @@ export class LayoutComponent {
     { labelKey: 'support', icon: 'help-circle', route: '/app/support', badge: null },
     { labelKey: 'billing', icon: 'credit-card', route: '/app/billing', badge: null },
   ];
+
+  constructor(
+    private router: Router,
+    public language: LanguageService,
+    private authService: AuthService,
+  ) {}
+
+  ngOnInit() {
+    if (this.authService.getCurrentUser().isAdmin) {
+      this.navItems.push({ labelKey: 'users', icon: 'users', route: '/app/admin-users', badge: null });
+    }
+  }
 
   logout() {
     this.authService.logout();
