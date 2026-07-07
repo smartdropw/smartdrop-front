@@ -15,7 +15,7 @@ export interface SmartDropUser {
   providedIn: 'root',
 })
 export class AuthService {
-  public readonly apiUrl = '';
+  public readonly apiUrl = 'https://smartdrop-api.duckdns.org';
   private readonly currentUserKey = 'smartdrop-current-user-v2';
   private readonly defaultEmail = 'smartdrop@gmail.com';
 
