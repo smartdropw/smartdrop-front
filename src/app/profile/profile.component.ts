@@ -59,12 +59,21 @@ export class ProfileComponent implements OnInit {
             notificationsEnabled: profile.notificationsEnabled ?? true
           }).subscribe({
             next: () => {
-              setTimeout(() => {
-                this.currentUser.fullName = this.editName.trim();
-                const saved = JSON.parse(localStorage.getItem('smartdrop-current-user-v2') || '{}');
-                saved.fullName = this.editName.trim();
-                localStorage.setItem('smartdrop-current-user-v2', JSON.stringify(saved));
-                this.showMessage('Profile updated successfully.');
+              // Also update in IAM
+              this.http.put<any>(`${this.authService.apiUrl}/api/iam/auth/change-name`, {
+                email: this.currentUser.email,
+                newName: this.editName.trim()
+              }).subscribe({
+                next: () => {
+                  setTimeout(() => {
+                    this.currentUser.fullName = this.editName.trim();
+                    const saved = JSON.parse(localStorage.getItem('smartdrop-current-user-v2') || '{}');
+                    saved.fullName = this.editName.trim();
+                    localStorage.setItem('smartdrop-current-user-v2', JSON.stringify(saved));
+                    this.showMessage('Profile updated successfully.');
+                    this.cdr.detectChanges();
+                  });
+                }
               });
             },
             error: () => this.showMessage('Error updating profile.', true)
@@ -79,12 +88,21 @@ export class ProfileComponent implements OnInit {
             notificationsEnabled: true
           }).subscribe({
             next: () => {
-              setTimeout(() => {
-                this.currentUser.fullName = this.editName.trim();
-                const saved = JSON.parse(localStorage.getItem('smartdrop-current-user-v2') || '{}');
-                saved.fullName = this.editName.trim();
-                localStorage.setItem('smartdrop-current-user-v2', JSON.stringify(saved));
-                this.showMessage('Profile created and updated.');
+              // Also update in IAM
+              this.http.put<any>(`${this.authService.apiUrl}/api/iam/auth/change-name`, {
+                email: this.currentUser.email,
+                newName: this.editName.trim()
+              }).subscribe({
+                next: () => {
+                  setTimeout(() => {
+                    this.currentUser.fullName = this.editName.trim();
+                    const saved = JSON.parse(localStorage.getItem('smartdrop-current-user-v2') || '{}');
+                    saved.fullName = this.editName.trim();
+                    localStorage.setItem('smartdrop-current-user-v2', JSON.stringify(saved));
+                    this.showMessage('Profile created and updated.');
+                    this.cdr.detectChanges();
+                  });
+                }
               });
             },
             error: () => this.showMessage('Error creating profile.', true)
@@ -101,12 +119,21 @@ export class ProfileComponent implements OnInit {
           notificationsEnabled: true
         }).subscribe({
           next: () => {
-            setTimeout(() => {
-              this.currentUser.fullName = this.editName.trim();
-              const saved = JSON.parse(localStorage.getItem('smartdrop-current-user-v2') || '{}');
-              saved.fullName = this.editName.trim();
-              localStorage.setItem('smartdrop-current-user-v2', JSON.stringify(saved));
-              this.showMessage('Profile created and updated.');
+            // Also update in IAM
+            this.http.put<any>(`${this.authService.apiUrl}/api/iam/auth/change-name`, {
+              email: this.currentUser.email,
+              newName: this.editName.trim()
+            }).subscribe({
+              next: () => {
+                setTimeout(() => {
+                  this.currentUser.fullName = this.editName.trim();
+                  const saved = JSON.parse(localStorage.getItem('smartdrop-current-user-v2') || '{}');
+                  saved.fullName = this.editName.trim();
+                  localStorage.setItem('smartdrop-current-user-v2', JSON.stringify(saved));
+                  this.showMessage('Profile created and updated.');
+                  this.cdr.detectChanges();
+                });
+              }
             });
           },
           error: () => this.showMessage('Error creating profile.', true)
