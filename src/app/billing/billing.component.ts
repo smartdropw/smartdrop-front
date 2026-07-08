@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -45,7 +45,8 @@ export class BillingComponent implements OnInit {
   constructor(
     public language: LanguageService,
     private authService: AuthService,
-    private http: HttpClient
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef
   ) {
     this.storageKey = this.authService.getStorageKey('billing-settings');
   }
@@ -141,6 +142,7 @@ export class BillingComponent implements OnInit {
         this.methodForm = this.emptyMethod();
         this.showMethodForm = false;
         this.message = 'Payment method added.';
+        this.cdr.detectChanges();
       }
     });
   }
@@ -156,6 +158,7 @@ export class BillingComponent implements OnInit {
         next: () => {
           this.paymentMethods.forEach((m, i) => m.primary = i === index);
           this.message = 'Primary payment method updated.';
+          this.cdr.detectChanges();
         }
       });
     } else {
@@ -175,6 +178,7 @@ export class BillingComponent implements OnInit {
             this.setPrimary(0);
           }
           this.message = 'Payment method removed.';
+          this.cdr.detectChanges();
         }
       });
     } else {
@@ -204,6 +208,7 @@ export class BillingComponent implements OnInit {
         this.walletBalance = res.balance;
         this.loadTransactions(userId);
         this.message = `$${amount.toFixed(2)} added to wallet.`;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -226,6 +231,7 @@ export class BillingComponent implements OnInit {
         this.walletBalance = res.balance;
         this.loadTransactions(userId);
         this.message = `$${amount.toFixed(2)} withdrawn from wallet.`;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -250,9 +256,11 @@ export class BillingComponent implements OnInit {
       next: (res) => {
         this.walletBalance = res.balance;
         this.loadTransactions(userId);
+        this.cdr.detectChanges();
       },
       error: () => {
         this.walletBalance = 0;
+        this.cdr.detectChanges();
       }
     });
 
@@ -266,9 +274,11 @@ export class BillingComponent implements OnInit {
           sub: item.sub,
           primary: item.primary
         }));
+        this.cdr.detectChanges();
       },
       error: () => {
         this.paymentMethods = [];
+        this.cdr.detectChanges();
       }
     });
   }
@@ -282,9 +292,11 @@ export class BillingComponent implements OnInit {
           amount: tx.amount,
           date: this.formatDate(tx.transactionDate)
         }));
+        this.cdr.detectChanges();
       },
       error: () => {
         this.transactions = [];
+        this.cdr.detectChanges();
       }
     });
   }

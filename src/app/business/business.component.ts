@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -30,7 +30,8 @@ export class BusinessComponent implements OnInit {
   constructor(
     public language: LanguageService,
     private authService: AuthService,
-    private http: HttpClient
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -83,6 +84,7 @@ export class BusinessComponent implements OnInit {
           this.message = 'Tank added.';
           this.showForm = false;
           this.form = this.emptyTank();
+          this.cdr.detectChanges();
         }
       });
     } else {
@@ -95,6 +97,7 @@ export class BusinessComponent implements OnInit {
             this.showForm = false;
             this.form = this.emptyTank();
             this.editingIndex = null;
+            this.cdr.detectChanges();
           }
         });
       }
@@ -109,6 +112,7 @@ export class BusinessComponent implements OnInit {
         next: (res) => {
           this.tanks[index] = res;
           this.message = `${tank.name} replenished.`;
+          this.cdr.detectChanges();
         }
       });
     } else {
@@ -125,6 +129,7 @@ export class BusinessComponent implements OnInit {
         next: () => {
           this.tanks.splice(index, 1);
           this.message = `${tank.name} removed.`;
+          this.cdr.detectChanges();
         }
       });
     } else {
@@ -144,9 +149,11 @@ export class BusinessComponent implements OnInit {
     this.http.get<Tank[]>(`${this.authService.apiUrl}/api/v1/inventory/tanks/user/${userId}`).subscribe({
       next: (data) => {
         this.tanks = data || [];
+        this.cdr.detectChanges();
       },
       error: () => {
         this.tanks = [];
+        this.cdr.detectChanges();
       }
     });
   }

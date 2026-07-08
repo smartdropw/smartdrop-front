@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -33,7 +33,8 @@ export class SupportComponent implements OnInit {
   constructor(
     public language: LanguageService,
     private authService: AuthService,
-    private http: HttpClient
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -69,6 +70,7 @@ export class SupportComponent implements OnInit {
         });
         this.message = 'Support ticket created.';
         this.ticket = { subject: '', priority: 'medium', description: '' };
+        this.cdr.detectChanges();
       }
     });
   }
@@ -80,6 +82,7 @@ export class SupportComponent implements OnInit {
         next: () => {
           t.status = 'solved';
           this.message = 'Ticket marked as solved.';
+          this.cdr.detectChanges();
         }
       });
     } else {
@@ -95,6 +98,7 @@ export class SupportComponent implements OnInit {
         next: () => {
           this.tickets.splice(index, 1);
           this.message = 'Ticket removed.';
+          this.cdr.detectChanges();
         }
       });
     } else {
@@ -122,9 +126,11 @@ export class SupportComponent implements OnInit {
           description: res.description,
           status: res.status ? res.status.toLowerCase() : 'open'
         }));
+        this.cdr.detectChanges();
       },
       error: () => {
         this.tickets = [];
+        this.cdr.detectChanges();
       }
     });
   }

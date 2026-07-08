@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -43,7 +43,8 @@ export class AlertsComponent implements OnInit {
   constructor(
     public language: LanguageService,
     private authService: AuthService,
-    private http: HttpClient
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef
   ) {
     this.storageKey = this.authService.getStorageKey('alerts-settings');
   }
@@ -94,6 +95,7 @@ export class AlertsComponent implements OnInit {
         });
         this.newAlert = this.emptyAlert();
         this.message = 'Alert added.';
+        this.cdr.detectChanges();
       }
     });
   }
@@ -105,6 +107,7 @@ export class AlertsComponent implements OnInit {
           alert.resolved = true;
           alert.time = 'Resolved just now';
           this.message = `${alert.title} resolved.`;
+          this.cdr.detectChanges();
         }
       });
     } else {
@@ -120,6 +123,7 @@ export class AlertsComponent implements OnInit {
         next: () => {
           this.alerts = this.alerts.filter((item) => item !== alert);
           this.message = 'Alert removed.';
+          this.cdr.detectChanges();
         }
       });
     } else {
@@ -162,9 +166,11 @@ export class AlertsComponent implements OnInit {
           resolved: item.resolved,
           time: this.formatTime(item.createdAt)
         }));
+        this.cdr.detectChanges();
       },
       error: () => {
         this.alerts = [];
+        this.cdr.detectChanges();
       }
     });
   }

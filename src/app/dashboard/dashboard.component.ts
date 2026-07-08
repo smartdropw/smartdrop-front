@@ -1,4 +1,4 @@
-import { OnInit, AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
+import { OnInit, AfterViewInit, Component, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -61,7 +61,8 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   constructor(
     public language: LanguageService,
     private authService: AuthService,
-    private http: HttpClient
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef
   ) {}
 
   get metrics() {
@@ -309,10 +310,12 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     this.http.get<Device[]>(`${this.authService.apiUrl}/api/v1/inventory/devices/user/${userId}`).subscribe({
       next: (data) => {
         this.devices = data || [];
+        this.cdr.detectChanges();
         this.drawChart();
       },
       error: () => {
         this.devices = [];
+        this.cdr.detectChanges();
         this.drawChart();
       }
     });
@@ -329,11 +332,13 @@ export class DashboardComponent implements OnInit, AfterViewInit {
           this.irrigationNext = 'Not scheduled';
           this.manualOverride = false;
         }
+        this.cdr.detectChanges();
       },
       error: () => {
         this.soilMoisture = 0;
         this.irrigationNext = 'Not scheduled';
         this.manualOverride = false;
+        this.cdr.detectChanges();
       }
     });
 
@@ -341,9 +346,11 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     this.http.get<Pattern[]>(`${this.authService.apiUrl}/api/v1/analytics/patterns/user/${userId}`).subscribe({
       next: (data) => {
         this.patterns = data || [];
+        this.cdr.detectChanges();
       },
       error: () => {
         this.patterns = [];
+        this.cdr.detectChanges();
       }
     });
   }

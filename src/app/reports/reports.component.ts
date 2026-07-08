@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
+import { Component, AfterViewInit, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LanguageService } from '../shared/language/language.service';
@@ -32,7 +32,7 @@ export class ReportsComponent implements AfterViewInit {
     { name: 'Efficiency Report', date: 'Generated 2 weeks ago' },
   ];
 
-  constructor(public language: LanguageService, private authService: AuthService) {
+  constructor(public language: LanguageService, private authService: AuthService, private cdr: ChangeDetectorRef) {
     this.storageKey = this.authService.getStorageKey('reports');
     if (!this.authService.isDefaultUser()) {
       this.efficiencyScore = 0;
@@ -58,6 +58,7 @@ export class ReportsComponent implements AfterViewInit {
     });
     this.message = 'Report generated with the selected filters.';
     this.save();
+    this.cdr.detectChanges();
     setTimeout(() => {
       this.drawTrendChart();
       this.drawCostChart();
