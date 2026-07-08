@@ -29,9 +29,11 @@ export class LoginComponent {
       alert('Por favor, ingresa tu email y contraseña.');
       return;
     }
-    this.authService.login(this.email, this.password).subscribe((success) => {
-      if (success) {
-        this.router.navigate(['/2fa-verify']);
+    this.authService.login(this.email, this.password).subscribe((res) => {
+      if (res && res.requires2FA) {
+        this.router.navigate(['/2fa-verify'], { queryParams: { email: this.email } });
+      } else if (res) {
+        this.router.navigate(['/dashboard']);
       } else {
         alert('Credenciales incorrectas.');
       }

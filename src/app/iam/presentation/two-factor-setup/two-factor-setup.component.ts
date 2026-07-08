@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { LanguageService } from '../../../shared/language/language.service';
+import { AuthService } from '../../infrastructure/services/auth.service';
 
 @Component({
   selector: 'app-two-factor-setup',
@@ -17,17 +18,22 @@ export class TwoFactorSetupComponent {
 
   constructor(
     public language: LanguageService,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {}
 
   enable2FA() {
-    if (!this.code || this.code.length !== 6) {
-      this.message = 'Please enter a valid 6-digit code.';
-      return;
-    }
+    const user = this.authService.getCurrentUser();
     
-    // Simulate API call to enable 2FA
-    alert('Two-Factor Authentication has been enabled successfully!');
-    this.router.navigate(['/app/dashboard']);
+    // Call API to enable 2FA
+    this.authService.enable2FA(user.email).subscribe({
+      next: () => {
+        alert('Two-Factor Authentication via Email has been enabled successfully!');
+        this.router.navigate(['/app/dashboard']);
+      },
+      error: () => {
+        this.message = 'Error enabling 2FA. Try again.';
+      }
+    });
   }
 }

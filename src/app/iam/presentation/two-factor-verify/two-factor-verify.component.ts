@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { LanguageService } from '../../../shared/language/language.service';
+import { AuthService } from '../../infrastructure/services/auth.service';
 
 @Component({
   selector: 'app-two-factor-verify',
@@ -15,10 +16,18 @@ export class TwoFactorVerifyComponent {
   code = '';
   message = '';
 
+  email = '';
+
   constructor(
     public language: LanguageService,
-    private router: Router
-  ) {}
+    private router: Router,
+    private route: ActivatedRoute,
+    private authService: AuthService
+  ) {
+    this.route.queryParams.subscribe(params => {
+      this.email = params['email'] || '';
+    });
+  }
 
   verifyCode() {
     if (!this.code || this.code.length !== 6) {
@@ -26,11 +35,23 @@ export class TwoFactorVerifyComponent {
       return;
     }
     
-    // Simulate API call to verify 2FA
-    if (this.code === '123456') {
-      this.router.navigate(['/dashboard']);
-    } else {
-      this.message = 'Invalid verification code. Try "123456".';
+    if (!this.email) {
+      this.message = 'Missing email. Please login again.';
+      return;
     }
+
+    // Call the backend API
+    this.authService.verify2FA(this.email, this.code).subscribe({
+      next: (success) => {
+        if (success) {
+          this.router.navigate(['/dashboard']);
+        } else {
+          this.message = 'Invalid verification code.';
+        }
+      },
+      error: () => {
+        this.message = 'Error verifying code.';
+      }
+    });
   }
 }

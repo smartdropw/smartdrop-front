@@ -23,15 +23,18 @@ export class AuthService {
 
   register(email: string, password: string, fullName = ''): Observable<any> {
     const body = { email, password, fullName };
-    return this.http.post(`${this.apiUrl}/api/identity/auth/register`, body);
+    return this.http.post(`${this.apiUrl}/api/iam/auth/register`, body);
   }
 
-  login(email: string, password: string): Observable<boolean> {
+  login(email: string, password: string): Observable<any> {
     const body = { email, password };
-    return this.http.post<any>(`${this.apiUrl}/api/identity/auth/login`, body).pipe(
+    return this.http.post<any>(`${this.apiUrl}/api/iam/auth/login`, body).pipe(
       switchMap((res) => {
+        if (res && res.requires2FA) {
+          return of({ requires2FA: true });
+        }
         if (res && res.userId) {
-          return this.http.get<boolean>(`${this.apiUrl}/api/identity/auth/users/${res.userId}/has-role/ADMIN`).pipe(
+          return this.http.get<boolean>(`${this.apiUrl}/api/iam/auth/users/${res.userId}/has-role/ADMIN`).pipe(
             map((isAdmin) => {
               const user: SmartDropUser = {
                 id: res.userId,
@@ -62,6 +65,36 @@ export class AuthService {
 
   logout() {
     localStorage.removeItem(this.currentUserKey);
+  }
+
+  forgotPassword(email: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/api/iam/auth/forgot-password`, { email });
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/api/iam/auth/reset-password`, { token, newPassword });
+  }
+
+  enable2FA(email: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/api/iam/auth/2fa/enable`, { email });
+  }
+
+  verify2FA(email: string, code: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/api/iam/auth/2fa/verify`, { email, code }).pipe(
+      map(res => {
+         if (res && res.userId) {
+           const user: SmartDropUser = {
+              id: res.userId,
+              email: res.email,
+              fullName: res.fullName,
+              isAdmin: false, // In a real app, you would fetch roles again
+           };
+           localStorage.setItem(this.currentUserKey, JSON.stringify(user));
+           return true;
+         }
+         return false;
+      })
+    );
   }
 
   getCurrentUser(): SmartDropUser {
