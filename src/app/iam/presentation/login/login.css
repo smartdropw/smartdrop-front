@@ -238,3 +238,33 @@ input:focus {
   cursor: pointer;
   box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
+
+/* RESPONSIVE DESIGN */
+@media (max-width: 900px) {
+  .split-screen {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+  }
+  .left-panel {
+    padding: 40px 20px;
+    flex: none;
+    align-items: center;
+    text-align: center;
+  }
+  .brand-info h1 {
+    font-size: 2.5rem;
+  }
+  .right-panel {
+    padding: 40px 20px;
+    flex: 1;
+    justify-content: flex-start;
+  }
+  .lang-selector {
+    position: static;
+    margin-bottom: 30px;
+  }
+  .login-box {
+    padding-top: 20px;
+  }
+}
