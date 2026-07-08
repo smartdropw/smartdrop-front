@@ -31,7 +31,7 @@ export class AuthService {
     return this.http.post<any>(`${this.apiUrl}/api/iam/auth/login`, body).pipe(
       switchMap((res) => {
         if (res && res.requires2FA) {
-          return of({ requires2FA: true });
+          return of({ requires2FA: true, simulatedCode: res.simulatedCode });
         }
         if (res && res.userId) {
           return this.http.get<boolean>(`${this.apiUrl}/api/iam/auth/users/${res.userId}/has-role/ADMIN`).pipe(

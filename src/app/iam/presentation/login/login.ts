@@ -31,6 +31,9 @@ export class LoginComponent {
     }
     this.authService.login(this.email, this.password).subscribe((res) => {
       if (res && res.requires2FA) {
+        if (res.simulatedCode) {
+          alert('🔑 SIMULATED 2FA CODE: ' + res.simulatedCode + '\n(This simulates checking your email)');
+        }
         this.router.navigate(['/2fa-verify'], { queryParams: { email: this.email } });
       } else if (res) {
         this.router.navigate(['/dashboard']);

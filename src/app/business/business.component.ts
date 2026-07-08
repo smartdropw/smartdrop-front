@@ -10,6 +10,7 @@ interface Tank {
   name: string;
   capacity: number;
   current: number;
+  liquidType?: string;
 }
 
 @Component({
@@ -72,6 +73,7 @@ export class BusinessComponent implements OnInit {
       name: this.form.name,
       capacity: Number(this.form.capacity),
       current: Math.min(Number(this.form.current) || 0, Number(this.form.capacity)),
+      liquidType: this.form.liquidType || 'WATER'
     };
 
     const user = this.authService.getCurrentUser();
@@ -139,7 +141,21 @@ export class BusinessComponent implements OnInit {
   }
 
   private emptyTank(): Tank {
-    return { name: '', capacity: 5000, current: 0 };
+    return { name: '', capacity: 5000, current: 0, liquidType: 'WATER' };
+  }
+
+  liquidTypes = ['WATER', 'INDUSTRIAL_WATER', 'FUEL', 'CHEMICAL', 'DAIRY', 'OTHER'];
+
+  getLiquidLabel(type?: string): string {
+    const map: Record<string, string> = {
+      WATER: 'liquidWater',
+      INDUSTRIAL_WATER: 'liquidIndustrial',
+      FUEL: 'liquidFuel',
+      CHEMICAL: 'liquidChemical',
+      DAIRY: 'liquidDairy',
+      OTHER: 'liquidOther'
+    };
+    return this.language.t(map[type || 'WATER'] || 'liquidWater');
   }
 
   private load() {

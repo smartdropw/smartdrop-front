@@ -61,6 +61,11 @@ export const routes: Routes = [
           import('./admin-users/admin-users.component').then((m) => m.AdminUsersComponent),
       },
       {
+        path: 'profile',
+        loadComponent: () =>
+          import('./profile/profile.component').then((m) => m.ProfileComponent),
+      },
+      {
         path: 'settings/2fa',
         loadComponent: () =>
           import('./iam/presentation/two-factor-setup/two-factor-setup.component').then((m) => m.TwoFactorSetupComponent),

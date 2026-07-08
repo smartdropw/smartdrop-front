@@ -29,7 +29,16 @@
       </div>
 
       <div class="inline-form compact-form" *ngIf="showForm">
-        <label>{{ language.t('name') }} <input type="text" [(ngModel)]="form.name" placeholder="Tank name"></label>
+        <div class="form-group">
+          <label>{{ language.t('name') }}</label>
+          <input type="text" [(ngModel)]="form.name" [placeholder]="language.t('name')">
+        </div>
+        <div class="form-group">
+          <label>{{ language.t('liquidType') }}</label>
+          <select [(ngModel)]="form.liquidType" class="form-select">
+            <option *ngFor="let type of liquidTypes" [value]="type">{{ getLiquidLabel(type) }}</option>
+          </select>
+        </div>
         <label>{{ language.t('capacity') }} <input type="number" min="1" [(ngModel)]="form.capacity"></label>
         <label>{{ language.t('current') }} <input type="number" min="0" [(ngModel)]="form.current"></label>
         <button class="btn-primary" (click)="saveTank()">{{ language.t('saveTank') }}</button>
@@ -42,7 +51,7 @@
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
           </div>
           <div class="tank-info">
-            <p class="tank-name">{{ t.name }}</p>
+            <p class="tank-name">{{ t.name }} <span class="liquid-badge">{{ getLiquidLabel(t.liquidType) }}</span></p>
             <p class="tank-cap">{{ language.t('capacity') }}: {{ t.capacity }}L - {{ language.t('current') }}: {{ t.current }}L</p>
             <div class="tank-bar">
               <div class="tank-fill" [style.width.%]="getLevel(t)" [ngClass]="{ 'low': getLevel(t) < 30 }"></div>

@@ -16,6 +16,7 @@ interface Device {
   daily: string;
   battery: number;
   status: DeviceStatus;
+  phLevel?: number;
 }
 
 interface Pattern {
@@ -291,7 +292,21 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   }
 
   private emptyDevice(): Device {
-    return { name: '', location: '', flow: '', daily: '', battery: 100, status: 'online' };
+    return { name: '', location: '', flow: '', daily: '', battery: 100, status: 'online', phLevel: undefined };
+  }
+
+  getPhColor(ph?: number): string {
+    if (ph === undefined || ph === null) return '#94a3b8';
+    if (ph >= 6.5 && ph <= 7.5) return '#10b981';
+    if ((ph >= 6.0 && ph < 6.5) || (ph > 7.5 && ph <= 8.0)) return '#f59e0b';
+    return '#ef4444';
+  }
+
+  getPhLabel(ph?: number): string {
+    if (ph === undefined || ph === null) return '—';
+    if (ph >= 6.5 && ph <= 7.5) return this.language.t('phOptimal');
+    if ((ph >= 6.0 && ph < 6.5) || (ph > 7.5 && ph <= 8.0)) return this.language.t('phAcceptable');
+    return this.language.t('phDangerous');
   }
 
   private parseLiters(value: string) {

@@ -19,6 +19,7 @@ export class LayoutComponent implements OnInit {
     { labelKey: 'business', icon: 'briefcase', route: '/app/business', badge: null },
     { labelKey: 'support', icon: 'help-circle', route: '/app/support', badge: null },
     { labelKey: 'billing', icon: 'credit-card', route: '/app/billing', badge: null },
+    { labelKey: 'profile', icon: 'user', route: '/app/profile', badge: null },
   ];
 
   constructor(

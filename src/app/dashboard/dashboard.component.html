@@ -119,6 +119,7 @@
         <div class="stat-row"><span>{{ language.t('currentFlow') }}</span><strong>{{ d.flow }}</strong></div>
         <div class="stat-row"><span>{{ language.t('dailyUsage') }}</span><strong>{{ d.daily }}</strong></div>
         <div class="stat-row"><span>{{ language.t('battery') }}</span><strong>{{ d.battery }}%</strong></div>
+        <div class="stat-row"><span>{{ language.t('phLevel') }}</span><strong [style.color]="getPhColor(d.phLevel)">{{ d.phLevel !== undefined && d.phLevel !== null ? d.phLevel.toFixed(1) : '—' }} <small>{{ getPhLabel(d.phLevel) }}</small></strong></div>
       </div>
       <div class="battery-bar">
         <div class="battery-fill" [style.width.%]="d.battery" [ngClass]="{ 'battery--low': d.battery < 20 }"></div>
