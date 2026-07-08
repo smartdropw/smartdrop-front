@@ -31,7 +31,7 @@ export class LoginComponent {
     }
     this.authService.login(this.email, this.password).subscribe((success) => {
       if (success) {
-        this.router.navigate(['/app/dashboard']);
+        this.router.navigate(['/2fa-verify']);
       } else {
         alert('Credenciales incorrectas.');
       }

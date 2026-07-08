@@ -1,0 +1,23 @@
+@import '../login/login.css';
+
+.action-message {
+  margin-bottom: 20px;
+  padding: 12px;
+  background-color: rgba(0, 180, 219, 0.1);
+  color: #0083b0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.action-message.error {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+}
+
+input[type="text"] {
+  text-align: center;
+  font-size: 1.5rem;
+  letter-spacing: 5px;
+}

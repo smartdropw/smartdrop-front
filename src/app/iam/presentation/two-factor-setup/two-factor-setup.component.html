@@ -1,0 +1,45 @@
+<div class="split-screen">
+  <div class="left-panel">
+    <div class="brand-info">
+      <h2>SmartDrop</h2>
+      <span class="tagline">Security Setup</span>
+      <h1>Enable 2FA</h1>
+      <p>Scan the QR code with your authenticator app (e.g. Google Authenticator or Authy) to secure your account.</p>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <div class="lang-selector">
+      <i class="feather icon-globe"></i>
+      <button>ES</button>
+    </div>
+
+    <div class="login-box" style="text-align: center;">
+      <h2 class="login-title">Configure 2FA</h2>
+      <p class="login-subtitle" style="margin-bottom: 20px;">Scan this QR code with your app</p>
+      
+      <!-- Mock QR Code -->
+      <div class="qr-container" style="margin-bottom: 30px; padding: 20px; background: white; border-radius: 12px; display: inline-block; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #e5e7eb;">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=otpauth://totp/SmartDrop:admin@smartdrop.com?secret=JBSWY3DPEHPK3PXP&issuer=SmartDrop" alt="QR Code" width="150" height="150">
+      </div>
+
+      <div class="action-message success" *ngIf="message">{{ message }}</div>
+
+      <div class="input-group" style="text-align: left;">
+        <label>Enter the 6-digit code to verify</label>
+        <div class="input-wrapper">
+          <i class="feather icon-shield field-icon"></i>
+          <input type="text" placeholder="000000" maxlength="6" [(ngModel)]="code">
+        </div>
+      </div>
+
+      <button class="btn-primary" (click)="enable2FA()">
+        Verify and Enable <i class="feather icon-check-circle"></i>
+      </button>
+
+      <div class="register-link" style="margin-top: 20px;">
+        <a routerLink="/app/dashboard" style="color: #6b7280; font-weight: 500;">Skip for now</a>
+      </div>
+    </div>
+  </div>
+</div>

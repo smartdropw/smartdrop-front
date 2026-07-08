@@ -6,6 +6,18 @@ export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
+  { 
+    path: 'forgot-password', 
+    loadComponent: () => import('./iam/presentation/forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent) 
+  },
+  { 
+    path: 'reset-password', 
+    loadComponent: () => import('./iam/presentation/reset-password/reset-password.component').then(m => m.ResetPasswordComponent) 
+  },
+  { 
+    path: '2fa-verify', 
+    loadComponent: () => import('./iam/presentation/two-factor-verify/two-factor-verify.component').then(m => m.TwoFactorVerifyComponent) 
+  },
   { path: 'dashboard', redirectTo: 'app/dashboard', pathMatch: 'full' },
   {
     path: 'app',
@@ -47,6 +59,11 @@ export const routes: Routes = [
         path: 'admin-users',
         loadComponent: () =>
           import('./admin-users/admin-users.component').then((m) => m.AdminUsersComponent),
+      },
+      {
+        path: 'settings/2fa',
+        loadComponent: () =>
+          import('./iam/presentation/two-factor-setup/two-factor-setup.component').then((m) => m.TwoFactorSetupComponent),
       },
     ],
   },
